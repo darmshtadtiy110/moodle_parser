@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/phpQuery/jQueryServer" />
+      <path value="$PROJECT_DIR$/vendor/phpQuery/api-reference" />
+      <path value="$PROJECT_DIR$/vendor/phpQuery/phpQuery" />
+      <path value="$PROJECT_DIR$/vendor/phpQuery/test-cases" />
+      <path value="$PROJECT_DIR$/vendor/phpQuery/cli" />
+      <path value="$PROJECT_DIR$/vendor/imangazaliev/didom" />
+    </include_path>
+  </component>
+</project>
