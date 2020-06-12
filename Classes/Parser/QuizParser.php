@@ -74,7 +74,11 @@ class QuizParser extends Parser
 				$review = $attempt_tr->find("td.c4>a");
 
 				if( !empty($review) )
-					$attempt_list[$index]["link"] = $review[0]->attr("href");
+				{
+					$attempt_review_link = $review[0]->attr("href");
+					$attempt_list[$index]["link"] = $attempt_review_link;
+					$attempt_list[$index]["id"] = $this->parseIdFromLink($attempt_review_link);
+				}
 
 				if( !empty($grade) )
 					$attempt_list[$index]["grade"] = (int) $grade[0]->text();
