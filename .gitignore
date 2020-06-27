@@ -1,6 +1,8 @@
-/.idea
-/storage/cookies
-/storage/passports
-/vendor
+.idea/
+storage/
+cache/
+vendor/
+composer.json
+composer.lock
 server.php
 test.php
