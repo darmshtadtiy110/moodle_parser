@@ -20,14 +20,19 @@ trait Parsable
 		return $this->parser;
 	}
 
-	private function setParser()
+	/**
+	 * @return Parser
+	 */
+	private static function getParser()
 	{
 		// get resource name
-		$resource_class = Tools::get_class_name($this);
+		$resource_class = Tools::get_class_name(static());
 
 		// find needed parser
 		$parser_class = "\\Parser\\".$resource_class."Parser";
 
-		$this->parser = new $parser_class();
+		return new $parser_class();
 	}
+
+	abstract function parse();
 }
