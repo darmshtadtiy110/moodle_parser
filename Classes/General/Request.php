@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * IT'S FULLY LEGACY UNUSED CODE
+ * LIVING THERE A LONG TIME MIGHT BE DANGEROUS FOR YOU!
+ */
 
 namespace General;
 use \DiDom\Document;
