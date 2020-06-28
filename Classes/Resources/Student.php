@@ -95,8 +95,7 @@ class Student extends Resource
 		try {
 			$login_request = new Login(
 				$this->passport()->login(),
-				$this->passport()->password(),
-				$this->cookies()
+				$this->passport()->password()
 			);
 
 			$this->parser()->setParsePage($login_request->response());
