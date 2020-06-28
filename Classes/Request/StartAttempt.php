@@ -6,7 +6,14 @@ namespace Request;
 
 class StartAttempt extends Request
 {
-	public function __construct($cookies, $session_key, $cmid, $timer_exist = false)
+	/**
+	 * StartAttempt constructor.
+	 * @param $session_key
+	 * @param $cmid
+	 * @param bool $timer_exist
+	 * @throws CurlErrorException
+	 */
+	public function __construct($session_key, $cmid, $timer_exist = false)
 	{
 		$post_fields[ "cmid" ] = $cmid;
 		$post_fields[ "sesskey" ] = $session_key;
@@ -19,8 +26,7 @@ class StartAttempt extends Request
 
 		parent::__construct(
 			Properties::$start_attempt,
-			$cookies,
 			$post_fields
-			);
+		);
 	}
 }

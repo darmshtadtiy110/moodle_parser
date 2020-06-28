@@ -6,11 +6,10 @@ namespace Request;
 
 class Login extends Request
 {
-	public function __construct($login, $password, $cookies)
+	public function __construct($login, $password)
 	{
 		parent::__construct(
 			Properties::$login_url,
-			$cookies,
 			[
 				"username" => $login,
 				"password" => $password

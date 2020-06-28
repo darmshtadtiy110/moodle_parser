@@ -5,8 +5,8 @@ namespace Request;
 
 
 use DiDom\Document;
-use Exception;
 use FileSystem\Cookies;
+use Resources\Student;
 
 class Request
 {
@@ -28,16 +28,14 @@ class Request
 	/**
 	 * Request constructor.
 	 * @param $url
-	 * @param null $cookies
 	 * @param array $post_fields
 	 * @throws CurlErrorException
-	 * @throws
 	 */
-	public function __construct($url, $cookies = null, $post_fields = [])
+	public function __construct($url, $post_fields = [])
 	{
 		$this->url = $url;
-		$this->cookies = $cookies;
 		$this->post_fields = $post_fields;
+		$this->cookies = Student::getInstance()->cookies();
 
 		$this->make();
 	}
@@ -74,13 +72,16 @@ class Request
 		$this->response = new Document($html);
 	}
 
-	public function response()
-	{
-		return $this->response;
-	}
-
 	public function getUrl()
 	{
 		return $this->url;
+	}
+
+	/**
+	 * @return Document
+	 */
+	public function response()
+	{
+		return $this->response;
 	}
 }
