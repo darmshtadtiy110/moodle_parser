@@ -45,8 +45,9 @@ class Tools
 		echo $message."\n";
 	}
 
-	public static function get_class_name($classname)
+	public static function get_class_name($object)
 	{
+		$classname = get_class($object);
         if ($pos = strrpos($classname, '\\')) return substr($classname, $pos + 1);
         return $pos;
 	}
