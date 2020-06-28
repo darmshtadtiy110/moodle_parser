@@ -1,6 +1,0 @@
-{
-    "require": {
-        "imangazaliev/didom": "^1.15",
-        "ext-curl": "^7.2"
-    }
-}
