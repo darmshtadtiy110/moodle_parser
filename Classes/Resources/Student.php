@@ -15,7 +15,7 @@ use Request\Login;
 
 class Student extends Resource
 {
-	use ParentResource;
+	use ParentResource, Parsable;
 
 	/** @var Student */
 	private static $instance;
@@ -91,7 +91,6 @@ class Student extends Resource
 
 	public function auth()
 	{
-
 		// TODO add id parsing
 		try {
 			$login_request = new Login(
@@ -100,23 +99,28 @@ class Student extends Resource
 				$this->cookies()
 			);
 
-			$this->parser()->setParsePage($login_request->response);
+			$this->parser()->setParsePage($login_request->response());
 
-			if($this->parser()->getLoginResults() === true)
-			{
-				try {
-					$this->name = $this->parser()->getUserText();
-
-					$this->course_list = $this->parser()->getCourseList();
-				}
-				catch (Exception $e) {
-					echo $e->getMessage();
-				}
-
-			}
-			else { Signal::msg( $this->parser->getLoginError()); };
+			$this->parse();
 
 		}
 		catch(CurlErrorException $e) { Signal::msg($e->getMessage()); }
+	}
+
+	public function parse()
+	{
+		if($this->parser()->getLoginResults() === true)
+		{
+			try {
+				$this->name = $this->parser()->getUserText();
+
+				$this->course_list = $this->parser()->getCourseList();
+			}
+			catch (Exception $e) {
+				echo $e->getMessage();
+			}
+
+		}
+		else { Signal::msg( $this->parser->getLoginError()); };
 	}
 }
