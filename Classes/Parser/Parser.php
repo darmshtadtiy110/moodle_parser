@@ -5,7 +5,6 @@ namespace Parser;
 
 
 use DiDom\Document;
-use DiDom\Exceptions\InvalidSelectorException;
 
 abstract class Parser
 {
@@ -13,53 +12,11 @@ abstract class Parser
 	protected $parse_page;
 
 	/**
-	 * Parser constructor.
 	 * @param Document $parse_page
-	 * @throws LoginNeededException
 	 */
-	function __construct(Document $parse_page)
+	public function setParsePage($parse_page)
 	{
 		$this->parse_page = $parse_page;
-
-		if($this->getLoginResults() !== true)
-			throw new LoginNeededException($this->getLoginError());
-	}
-
-	/**
-	 * @return bool|string
-	 */
-	public function getLoginResults()
-	{
-		$login_nodes = [];
-
-		try {
-			$login_nodes = $this->parse_page->find(".login");
-		}
-		catch (InvalidSelectorException $e) {
-			echo "Wrong selector ". $e->getMessage();
-		}
-
-		if(empty($login_nodes))
-			return true;
-
-		return $login_nodes[0]->text();
-
-	}
-
-	/**
-	 * @return bool|string
-	 */
-	public function getLoginError()
-	{
-		try {
-			$error_nodes = $this->parse_page->find("span.error");
-		}
-		catch (InvalidSelectorException $e) {}
-
-		if(empty($error_nodes))
-			return false;
-
-		return $error_nodes[0]->text();
 	}
 
 	protected function parseIdFromLink($link)

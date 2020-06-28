@@ -4,12 +4,52 @@
 namespace Parser;
 
 
-use DiDom\Exceptions\InvalidSelectorException;
-use Exception;
+use General\Signal;
 use Resources\Course;
+use Exception;
+use DiDom\Exceptions\InvalidSelectorException;
 
+
+// TODO add id parsing
 class StudentParser extends Parser
 {
+	/**
+	 * @return bool|string
+	 */
+	public function getLoginResults()
+	{
+		$login_nodes = [];
+
+		try {
+			$login_nodes = $this->parse_page->find(".login");
+		}
+		catch (InvalidSelectorException $e) {
+			echo "Wrong selector ". $e->getMessage();
+		}
+
+		if(empty($login_nodes))
+			return true;
+
+		return $login_nodes[0]->text();
+	}
+
+	/**
+	 * @return bool|string
+	 */
+	public function getLoginError()
+	{
+		try {
+			$error_nodes = $this->parse_page->find("span.error");
+		}
+		catch (InvalidSelectorException $e) {}
+
+		if(empty($error_nodes))
+			return false;
+
+		return $error_nodes[0]->text();
+	}
+
+
 	/**
 	 * @return string
 	 * @throws Exception
@@ -34,41 +74,36 @@ class StudentParser extends Parser
 	 * @throws Exception
 	 * @return array
 	 */
-	public function getCourseList()
+	public function getCoursesArray()
 	{
-		$courses_list = [];
+		$course_boxes  = [];
+		$courses_array = [];
 
 		try {
 			$course_boxes = $this->parse_page->find("div.coursebox");
 		}
 		catch (InvalidSelectorException $e) {
-			echo "Wrong selector ";
+			Signal::msg("Wrong selector, or boxes not found on page ".$e->getMessage());
 		}
-
-		if(empty($course_boxes)) throw new Exception("Course boxes not found on page");
 
 		foreach ($course_boxes as $key => $course_box)
 		{
-			$course_name = false;
-			$course_link = false;
+			$course_name = "";
+			$course_link = "";
 
 			try {
 				$course_name = $course_box->find("div.info>h3>a")[0]->text();
-			}
-			catch (InvalidSelectorException $e) { echo $e->getMessage(); }
-
-			try {
 				$course_link = $course_box->find("div.info>h3>a")[0]->attr("href");
 			}
-			catch (InvalidSelectorException $e) { echo $e->getMessage(); }
+			catch (InvalidSelectorException $e) { Signal::msg($e->getMessage()); }
 
-			if($course_name && $course_link)
+			if($course_name != "" && $course_link != "")
 			{
 				$id = $this->parseIdFromLink($course_link);
 
 				$course = new Course();
 
-				$courses_list[$id] = $course->loadFromArray([
+				$courses_array[$id] = $course->loadFromArray([
 					"id" => $id,
 					"name" => $course_name,
 					"link" => $course_link
@@ -76,6 +111,6 @@ class StudentParser extends Parser
 			}
 		}
 
-		return $courses_list;
+		return $courses_array;
 	}
 }
