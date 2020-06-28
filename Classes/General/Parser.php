@@ -1,4 +1,8 @@
 <?php
+/**
+ * IT'S FULLY LEGACY UNUSED CODE
+ * LIVING THERE A LONG TIME MIGHT BE DANGEROUS FOR YOU!
+ */
 
 namespace General;
 
@@ -8,7 +12,7 @@ use Exception;
 use Resources\ProcessingAttempt;
 use Resources\Quiz;
 
-class Parser
+class ParserOLD
 {
 	public static $target = "http://nip.tsatu.edu.ua";
 
