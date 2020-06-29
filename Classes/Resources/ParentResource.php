@@ -10,12 +10,15 @@ trait ParentResource
 {
 	public function setChild(Resource $resource)
 	{
-		$resource_class = Tools::get_class_name($resource);
+		$resource_class = Tools::get_object_class_name($resource);
 
-		$list_name = strtolower($resource_class)."_list";
+		//$list_name = strtolower($resource_class)."_list";
 
-		if( !array_key_exists($resource->id(), $this->$list_name) )
-			$this->$list_name[$resource->id()] = $resource;
+
+		$list_name = Tools::camel_to_snake($resource_class)."_list";
+
+		if( !array_key_exists($resource->id, $this->$list_name) )
+			$this->$list_name[$resource->id] = $resource;
 	}
 
 	/**
