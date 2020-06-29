@@ -4,25 +4,68 @@
 namespace Resources;
 
 
-use DiDom\Document;
-use Factory\QuestionFactory;
+use Parser\AttemptParser;
+use Request\CurlErrorException;
+use Request\StartAttempt;
 
 class ProcessingAttempt extends Attempt
 {
-	/** @var Document*/
-	private $current_page;
+	/** @var string */
+	private $session_key;
 
-	private $questions_chunk = [];
+	/** @var int */
+	private $cmid;
 
-	/** @var integer
-	 *  Counter of total questions
+	/** @var bool */
+	private $timer_exist = false;
+
+	/** @var Question */
+	private $current_question;
+
+	/**
+	 * @param mixed $session_key
 	 */
-	private $total_questions;
-
-	function __construct($page, $name)
+	public function setSessionKey($session_key)
 	{
-		parent::__construct($page, $name);
-		$current_question = QuestionFactory::CreateFromAttempt($this);
+		$this->session_key = $session_key;
+	}
+
+	/**
+	 * @param mixed $cmid
+	 */
+	public function setCmid($cmid)
+	{
+		$this->cmid = $cmid;
+	}
+
+	/**
+	 * @param bool $timer_exist
+	 */
+	public function setTimerExist($timer_exist)
+	{
+		$this->timer_exist = $timer_exist;
+	}
+
+	protected function request_resource()
+	{
+		try {
+			$this->last_request = new StartAttempt(
+				$this->session_key,
+				$this->cmid,
+				$this->timer_exist
+			);
+		}
+		catch (CurlErrorException $e) {}
+	}
+
+	protected function setParser()
+	{
+		$this->parser = new AttemptParser();
+	}
+
+	protected function use_parser()
+	{
+
 	}
 
 	/**

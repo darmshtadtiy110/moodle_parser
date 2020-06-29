@@ -4,43 +4,35 @@
 namespace Resources;
 
 
-
-use General\Signal;
-use Parser\Parser;
-use Parser\QuizParser;
-
 class Quiz extends Resource
 {
-	private $session_key;
+	use ParentResource;
 
-	private $cmid;
+	private $finished_attempt_list = [];
 
-	private $timer_exist = false;
+	/** @var ProcessingAttempt */
+	private $processing_attempt;
 
-	private $attempt_list = [];
-
-	/**
-	 * @return string
-	 */
-	public function getSessionKey()
+	protected function use_parser()
 	{
-		return $this->session_key;
-	}
+		$attempt_list = $this->parser()->getAttemptList();
 
-	/**
-	 * @return string
-	 */
-	public function getCmid()
-	{
-		return $this->cmid;
-	}
+		foreach ($attempt_list as $attempt_array)
+		{
+			if($attempt_array["finished"] == true)
+			{
+				$attempt = new FinishedAttempt();
 
-	/**
-	 * @return boolean
-	 */
-	public function getTimerExist()
-	{
-		return $this->timer_exist;
+				$attempt->loadFromArray($attempt_array);
+
+				$this->setChild($attempt);
+			}
+			else {
+				$this->processing_attempt = new ProcessingAttempt();
+
+				$this->processing_attempt->loadFromArray($attempt_array);
+			}
+		}
 	}
 
 	/**
@@ -48,74 +40,35 @@ class Quiz extends Resource
 	 */
 	public function getAttemptList()
 	{
-		return $this->attempt_list;
+		return $this->finished_attempt_list;
 	}
+
+	public function getBestAttempt()
+	{
+		//TODO
+	}
+
 	/**
 	 * @return ProcessingAttempt
 	 */
-	public function newAttempt()
+	public function startNewAttempt()
 	{
-		return $this->resource_manager->makeNewAttempt($this);
+		if( !$this->processing_attempt instanceof ProcessingAttempt )
+			$this->processing_attempt = new ProcessingAttempt();
+
+		$this->processing_attempt->setSessionKey( $this->parser()->getSessionKey() );
+
+		$this->processing_attempt->setCmid( $this->parser()->getQuizId() );
+
+		$this->processing_attempt->setTimerExist( $this->parser()->getTimer() );
+
+		$this->processing_attempt->parse();
+
+		return $this->processing_attempt;
 	}
 
-	public function getAttempt($id)
+	public function processingAttempt()
 	{
-		return $this->resource_manager->getResource($this->child_array[$id]);
-	}
-
-	public function parserLoader(Parser $parser)
-	{
-		if( $parser instanceof QuizParser )
-		{
-			Signal::msg("Quiz parser started!");
-
-			$session_key = $parser->getSessionKey();
-			$quiz_id = $parser->getQuizId();
-			$timer_exist = $parser->getTimer();
-
-			$attempt_list = $parser->getAttemptList();
-
-			$this->setSessionKey($session_key);
-			$this->setCmid($quiz_id);
-			$this->setTimerExist($timer_exist);
-
-			foreach ($attempt_list as $attempt_array)
-			{
-				$attempt = new Attempt();
-
-				$attempt->loadFromArray($attempt_array);
-
-				$this->addAttempt($attempt);
-			}
-		}
-	}
-
-	/**
-	 * @param mixed $session_key
-	 */
-	public function setSessionKey($session_key)
-	{
-		$this->session_key = $session_key;
-	}
-
-	/**
-	 * @param mixed $cmid
-	 */
-	public function setCmid($cmid)
-	{
-		$this->cmid = $cmid;
-	}
-
-	/**
-	 * @param bool $timer_exist
-	 */
-	public function setTimerExist($timer_exist)
-	{
-		$this->timer_exist = $timer_exist;
-	}
-
-	public function addAttempt(Attempt $attempt)
-	{
-		$this->attempt_list = $attempt;
+		return $this->processing_attempt;
 	}
 }

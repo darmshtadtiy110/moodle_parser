@@ -4,57 +4,23 @@
 namespace Resources;
 
 
-use Parser\Parser;
-use Parser\CourseParser;
-
 class Course extends Resource
 {
+	use ParentResource, Parsable;
+
 	private $quiz_list = [];
 
-	private $documents = [];
+	private $document_list = [];
 
-	/**
-	 * @return array
-	 */
-	public function getQuizList()
+	protected function use_parser()
 	{
-		return $this->quiz_list;
-	}
-
-	public function getQuiz($id)
-	{
-		return $this->quiz_list[$id];
-	}
-
-	public function parserLoader(Parser $parser)
-	{
-		if( $parser instanceof CourseParser )
+		foreach ( $this->parser()->getQuizList() as $quiz_array)
 		{
-			foreach ( $parser->getQuizList() as $quiz_array)
-			{
-				$quiz = new Quiz();
-				$quiz->loadFromArray($quiz_array);
+			$quiz = new Quiz();
+			$quiz->loadFromArray($quiz_array);
 
-				$this->addQuiz($quiz);
-			}
+			$this->setChild($quiz);
 		}
 	}
-
-	/**
-	 * @param Document $document
-	 */
-	public function addDocument(Document $document)
-	{
-		$this->documents[$document->id()] = $document;
-	}
-
-	/**
-	 * @param Quiz $quiz
-	 */
-	public function addQuiz(Quiz $quiz)
-	{
-		$this->quiz_list[$quiz->id()] = $quiz;
-	}
-
 
 }

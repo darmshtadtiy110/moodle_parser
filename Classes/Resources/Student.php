@@ -88,31 +88,30 @@ class Student extends Resource
 		return $this->cookies;
 	}
 
-
 	public function auth()
 	{
-		// TODO add id parsing
+		$this->parse();
+	}
+
+	protected function request_resource()
+	{
 		try {
-			$login_request = new Login(
+			$this->last_request = new Login(
 				$this->passport()->login(),
 				$this->passport()->password()
 			);
-
-			$this->parser()->setParsePage($login_request->response());
-			$this->parse();
-
 		}
 		catch(CurlErrorException $e) { Signal::msg($e->getMessage()); }
 	}
 
-	public function parse()
+	protected function use_parser()
 	{
-		if($this->parser()->getLoginResults() === true)
+		if($this->parser->getLoginResults() === true)
 		{
 			try {
-				$this->name = $this->parser()->getUserText();
+				$this->name = $this->parser->getUserText();
 
-				$this->course_list = $this->parser()->getCoursesArray();
+				$this->course_list = $this->parser->getCoursesArray();
 			}
 			catch (Exception $e) {
 				echo $e->getMessage();

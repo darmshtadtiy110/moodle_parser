@@ -3,16 +3,11 @@
 
 namespace Resources;
 
-use General\Tools;
-use General\Signal;
-use FileSystem\Cookies;
-use Parser\Parser;
-use Request\Request;
-use Parser\LoginNeededException;
-use Request\CurlErrorException;
 
 abstract class Resource
 {
+	use Parsable;
+
 	/** @var int */
 	protected $id;
 
@@ -22,57 +17,14 @@ abstract class Resource
 	/** @var string */
 	protected $link;
 
-	public function id()
+	public function __construct()
 	{
-		return $this->id;
-	}
-
-	public function name()
-	{
-		return $this->name;
-	}
-
-	public function link()
-	{
-		return $this->link;
+		$this->setParser();
 	}
 
 	public function loadFromDB()
 	{
 		return false;
-	}
-
-	public function loadFromParser(Cookies $cookies = null)
-	{
-		try {
-			// do request
-
-			$request = new Request($this->link, $cookies);
-
-			// launch parser
-			$resource_class = Tools::get_class_name(get_class($this));
-
-			$parser_class = "\\Parser\\".$resource_class."Parser";
-
-			/**
-			 * @var Parser $parser
-			 * @throws LoginNeededException
-			 */
-			$parser = new $parser_class($request->response());
-
-			$this->parserLoader($parser);
-
-		}
-		catch (CurlErrorException $e) {
-			Signal::msg($e->getMessage());
-		}
-		catch (LoginNeededException $e) {
-			//TODO re auth current user
-			Signal::msg($e->getMessage());
-		}
-
-
-		return $this;
 	}
 
 	public function loadFromArray($param_array)
@@ -89,6 +41,4 @@ abstract class Resource
 
 		return $this;
 	}
-
-	abstract function parserLoader(Parser $parser);
 }
