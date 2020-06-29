@@ -4,11 +4,13 @@
 namespace Parser;
 
 
-use Exception;
-use Resources\Quiz;
+use DiDom\Exceptions\InvalidSelectorException;
 
 class CourseParser extends Parser
 {
+	/**
+	 * @return array
+	 */
 	public function getQuizList()
 	{
 		$quiz_list = [];
@@ -16,26 +18,27 @@ class CourseParser extends Parser
 		try {
 			$quiz_nodes = $this->parse_page->find("li.activity.quiz.modtype_quiz>div>div>div>div>a");
 		}
-		catch (Exception $e) {
+		catch (InvalidSelectorException $e) {
 			echo "GetTestList exception ".$e->getMessage();
 		}
 
-		if( empty($quiz_nodes) ) return false;
-
-		foreach($quiz_nodes as $quiz)
+		if( !empty($quiz_nodes) )
 		{
-			$quiz_name = $quiz->text();
-			$quiz_link = $quiz->attr("href");
-
-			if($quiz_name && $quiz_link)
+			foreach($quiz_nodes as $quiz)
 			{
-				$id = $this->parseIdFromLink($quiz_link);
+				$quiz_name = $quiz->text();
+				$quiz_link = $quiz->attr("href");
 
-				$quiz_list[$id] = [
-					"id" => $id,
-					"name" => $quiz->text(),
-					"link" => $quiz->attr("href")
-				];
+				if($quiz_name && $quiz_link)
+				{
+					$id = $this->parseIdFromLink($quiz_link);
+
+					$quiz_list[$id] = [
+						"id" => $id,
+						"name" => $quiz->text(),
+						"link" => $quiz->attr("href")
+					];
+				}
 			}
 		}
 
