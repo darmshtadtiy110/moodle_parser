@@ -9,7 +9,6 @@ use Resources\Course;
 use Exception;
 use DiDom\Exceptions\InvalidSelectorException;
 
-
 // TODO add id parsing
 class StudentParser extends Parser
 {
