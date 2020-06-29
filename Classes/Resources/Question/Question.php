@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Resources;
+namespace Resources\Question;
 
 
 abstract class Question
@@ -19,17 +19,14 @@ abstract class Question
 	protected $state;
 
 	/** @var array */
-	protected $variants;
+	protected $variants = [];
 
 	/** @var integer */
 	protected $grade;
 
-	public function __construct($text, $variants, $answer = null, $grade = null)
+	public function __construct($question_text)
 	{
-		$this->text = $text;
-		$this->variants = $variants;
-		$this->answer = $answer;
-		$this->grade = $grade;
+		$this->text = $question_text;
 	}
 
 	/**
@@ -73,11 +70,11 @@ abstract class Question
 	}
 
 	/**
-	 * @param array $variants
+	 * @param string $variant
 	 */
-	public function setVariants($variants)
+	public function setVariant($variant)
 	{
-		$this->variants = $variants;
+		$this->variants[] = $variant;
 	}
 
 

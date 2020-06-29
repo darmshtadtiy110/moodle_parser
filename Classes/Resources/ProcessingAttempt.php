@@ -4,9 +4,10 @@
 namespace Resources;
 
 
-use Parser\AttemptParser;
 use Request\CurlErrorException;
 use Request\StartAttempt;
+
+use Resources\Question\Question;
 
 class ProcessingAttempt extends Attempt
 {
@@ -21,6 +22,9 @@ class ProcessingAttempt extends Attempt
 
 	/** @var Question */
 	private $current_question;
+
+	/** @var array */
+	private $question_list = [];
 
 	/**
 	 * @param mixed $session_key
@@ -46,6 +50,14 @@ class ProcessingAttempt extends Attempt
 		$this->timer_exist = $timer_exist;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getQuestionList()
+	{
+		return $this->question_list;
+	}
+
 	protected function request_resource()
 	{
 		try {
@@ -58,14 +70,13 @@ class ProcessingAttempt extends Attempt
 		catch (CurlErrorException $e) {}
 	}
 
-	protected function setParser()
-	{
-		$this->parser = new AttemptParser();
-	}
-
 	protected function use_parser()
 	{
+		$questions_on_current_page = $this->parser()->getQuestions();
 
+		$this->question_list = array_merge($this->question_list, $questions_on_current_page);
+
+		$this->current_question = $questions_on_current_page[0];
 	}
 
 	/**
@@ -73,10 +84,7 @@ class ProcessingAttempt extends Attempt
 	 */
 	public function getCurrentQuestion()
 	{
-		if($this->current_question instanceof Question)
-			return $this->current_question;
-
-		return false;
+		return $this->current_question;
 	}
 
 	/**

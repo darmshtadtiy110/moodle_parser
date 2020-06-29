@@ -51,7 +51,7 @@ class Quiz extends Resource
 	/**
 	 * @return ProcessingAttempt
 	 */
-	public function startNewAttempt()
+	public function startProcessingAttempt()
 	{
 		if( !$this->processing_attempt instanceof ProcessingAttempt )
 			$this->processing_attempt = new ProcessingAttempt();
