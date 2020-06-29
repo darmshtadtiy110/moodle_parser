@@ -80,8 +80,10 @@ class QuizParser extends Parser
 					$attempt_list[$index]["id"] = $this->parseIdFromLink($attempt_review_link);
 				}
 
-				if( !empty($grade) ):
-					$attempt_list[$index]["grade"] = (int) $grade[0]->text();
+				$grade = (int) $grade[0]->text();
+
+				if( $grade > 0 ):
+					$attempt_list[$index]["grade"] = $grade;
 					$attempt_list[$index]["finished"] = true;
 				else:
 					$attempt_list[$index]["finished"] = false;
