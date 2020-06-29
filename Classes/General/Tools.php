@@ -45,10 +45,20 @@ class Tools
 		echo $message."\n";
 	}
 
-	public static function get_class_name($object)
+	public static function get_object_class_name($object)
 	{
 		$classname = get_class($object);
         if ($pos = strrpos($classname, '\\')) return substr($classname, $pos + 1);
         return $pos;
+	}
+
+	public static function camel_to_snake ( $input )
+	{
+		if ( preg_match ( '/[A-Z]/', $input ) === 0 ) { return $input; }
+		$pattern = '/([a-z])([A-Z])/';
+		$r = strtolower ( preg_replace_callback ( $pattern, function ($a) {
+			return $a[1] . "_" . strtolower ( $a[2] );
+		}, $input ) );
+		return $r;
 	}
 }
