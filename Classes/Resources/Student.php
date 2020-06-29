@@ -21,7 +21,7 @@ class Student extends Resource
 	private static $instance;
 
 	/** @var StudentParser */
-	private $parser;
+	protected $parser;
 
 	/** @var Passport */
 	private $passport;
@@ -33,18 +33,18 @@ class Student extends Resource
 	private $course_list = [];
 
 	/**
-	 * @param null | int $passport_id
+	 * @param int $passport_id
 	 * @return Student
 	 */
 	public static function getInstance($passport_id = null)
 	{
-		if( empty(self::$instance) )
+		if( $passport_id > 0)
 		{
 			$user_passport = PassportFactory::create($passport_id);
 
 			$student = new Student();
 			$student->passport($user_passport);
-			$student->auth();
+
 			self::$instance = $student;
 		}
 
@@ -99,7 +99,6 @@ class Student extends Resource
 			);
 
 			$this->parser()->setParsePage($login_request->response());
-
 			$this->parse();
 
 		}
@@ -113,7 +112,7 @@ class Student extends Resource
 			try {
 				$this->name = $this->parser()->getUserText();
 
-				$this->course_list = $this->parser()->getCourseList();
+				$this->course_list = $this->parser()->getCoursesArray();
 			}
 			catch (Exception $e) {
 				echo $e->getMessage();
