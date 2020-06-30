@@ -4,11 +4,10 @@
 namespace Parser\Resources;
 
 
-use Parser\Parser;
-use DiDom\Element;
-use DiDom\Exceptions\InvalidSelectorException;
 use General\Signal;
-use Resources\Questions\TextQuestion;
+use Parser\Parser;
+use DiDom\Exceptions\InvalidSelectorException;
+use Parser\Resources\Questions\QuestionParser;
 
 class ProcessingAttemptParser extends Parser
 {
@@ -27,7 +26,7 @@ class ProcessingAttemptParser extends Parser
 
 			foreach ($question_boxes as $box)
 			{
-				$questions_array[] = $this->identQuestion($box);
+				$questions_array[] = QuestionParser::IdentQuestion($box);
 			}
 		}
 		catch (InvalidSelectorException $e) {}
@@ -35,25 +34,31 @@ class ProcessingAttemptParser extends Parser
 		return $questions_array;
 	}
 
-	private function identQuestion(Element $question_box)
+	public function parseInputs()
 	{
+		$inputs = [];
+
 		try {
-			$question_text = $question_box->find("div.qtext")[0]->text();
-			$variant_nodes = $question_box->find("div.answer>div");
+			$form_ob = $this->parse_page->find("form#responseform");
 
-			// as default - text question
-			$question = new TextQuestion($question_text);
+			if(empty($form_ob)) return false;
 
-			foreach ($variant_nodes as $variant)
-			{
-				$variant_text = $variant->find("label")[0]->text();
-				$variant_text = substr($variant_text, 3);
-
-				$question->setVariant($variant_text);
-			}
+			$inputs = $form_ob[0]->find("input");
 		}
-		catch (InvalidSelectorException $e) { Signal::msg("IdentQuestion error: ".$e->getMessage()); }
+		catch (InvalidSelectorException $e) {
+			Signal::msg("ParseQuizForm exception ".$e->getMessage());
+		}
 
-		return $question;
+		$fields = [];
+
+		foreach ($inputs as $input)
+		{
+			$input_name = $input->attr("name");
+			$input_value = $input->attr("value");
+			if($input_name != "" && !array_key_exists($input_name, $fields) )
+				$fields[$input_name] = $input_value;
+		}
+
+		return $fields;
 	}
 }

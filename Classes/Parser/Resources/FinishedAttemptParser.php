@@ -7,9 +7,10 @@ use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
 use General\Signal;
 
-class AttemptParser extends Parser
+class FinishedAttemptParser extends Parser
 {
 	/**
+	 * @deprecated
 	 * This function parsed finished attempt page
 	 * @return array
 	 */

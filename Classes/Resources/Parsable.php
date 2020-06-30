@@ -7,7 +7,7 @@ namespace Resources;
 use General\Signal;
 use Request\Request;
 use Parser\Parser;
-use Parser\Resources\AttemptParser;
+use Parser\Resources\FinishedAttemptParser;
 use Parser\Resources\CourseParser;
 use Parser\Resources\QuizParser;
 
@@ -22,7 +22,7 @@ trait Parsable
 	protected $last_request;
 
 	/**
-	 * @return Parser|CourseParser|QuizParser|AttemptParser
+	 * @return Parser|CourseParser|QuizParser|FinishedAttemptParser
 	 */
 	public function parser()
 	{
@@ -41,11 +41,14 @@ trait Parsable
 
 	protected function request_resource()
 	{
-		try {
-			$this->last_request = new Request($this->link);
-		}
-		catch (CurlErrorException $e) {
-			Signal::msg("Curl error in request for ".get_class()." ".$e->getMessage());
+		if( $this->link != "")
+		{
+			try {
+				$this->last_request = new Request($this->link);
+			}
+			catch (CurlErrorException $e) {
+				Signal::msg("Curl error in request for ".get_class()." ".$e->getMessage());
+			}
 		}
 	}
 

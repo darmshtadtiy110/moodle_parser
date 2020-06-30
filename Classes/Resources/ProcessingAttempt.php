@@ -4,13 +4,16 @@
 namespace Resources;
 
 
-use Request\CurlErrorException;
-use Request\StartAttempt;
-
+use General\AttemptProcessor;
+use Parser\Resources\ProcessingAttemptParser;
+use Request\Request;
 use Resources\Questions\Question;
 
 class ProcessingAttempt extends Attempt
 {
+	/** @var ProcessingAttemptParser */
+	protected $parser;
+
 	/** @var string */
 	private $session_key;
 
@@ -25,6 +28,8 @@ class ProcessingAttempt extends Attempt
 
 	/** @var array */
 	private $question_list = [];
+
+	private $form_inputs = [];
 
 	/**
 	 * @param mixed $session_key
@@ -58,25 +63,30 @@ class ProcessingAttempt extends Attempt
 		return $this->question_list;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getFormInputs()
+	{
+		return $this->form_inputs;
+	}
+
 	protected function request_resource()
 	{
-		try {
-			$this->last_request = new StartAttempt(
-				$this->session_key,
-				$this->cmid,
-				$this->timer_exist
-			);
-		}
-		catch (CurlErrorException $e) {}
+		$this->last_request = Request::StartAttempt(
+			$this->session_key,
+			$this->cmid,
+			$this->timer_exist
+		);
 	}
 
 	protected function use_parser()
 	{
-		$questions_on_current_page = $this->parser()->getQuestions();
-
+		$questions_on_current_page = $this->parser->getQuestions();
 		$this->question_list = array_merge($this->question_list, $questions_on_current_page);
-
 		$this->current_question = $questions_on_current_page[0];
+
+		$this->form_inputs = $this->parser->parseInputs();
 	}
 
 	/**
@@ -97,6 +107,8 @@ class ProcessingAttempt extends Attempt
 
 	public function process()
 	{
-		return true;
+		$next_page_request = AttemptProcessor::Random($this);
+		$this->parser->setParsePage($next_page_request->response());
+		$this->use_parser();
 	}
 }

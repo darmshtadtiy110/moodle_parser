@@ -4,8 +4,12 @@
 namespace Resources\Questions;
 
 
+//use Resources\Parsable;
+
 abstract class Question
 {
+	//use Parsable;
+
 	/** @var String */
 	protected $id;
 
@@ -70,10 +74,20 @@ abstract class Question
 	}
 
 	/**
-	 * @param string $variant
+	 * @param array $variant
 	 */
-	public function setVariant($variant)
+	public function setVariant(array $variant)
 	{
-		$this->variants[] = $variant;
+		if(
+			array_key_exists('value', $variant) &&
+			array_key_exists('input_name', $variant) &&
+			array_key_exists('input_value', $variant)
+		) {
+			$this->variants[] = [
+				"value" => $variant["value"],
+				"input_name" => $variant["input_name"],
+				"input_value" => $variant["input_value"]
+			];
+		}
 	}
 }
