@@ -6,6 +6,7 @@ namespace Request;
 
 use DiDom\Document;
 use FileSystem\Cookies;
+use General\Signal;
 use Resources\Student;
 
 class Request
@@ -83,5 +84,77 @@ class Request
 	public function response()
 	{
 		return $this->response;
+	}
+
+	/**
+	 * @param $login
+	 * @param $password
+	 * @return bool|Request
+	 */
+	public static function Login($login, $password)
+	{
+		$request = false;
+		try {
+			$request = new Request(
+				Properties::$login_url,
+				[
+					"username" => $login,
+					"password" => $password
+				]
+			);
+		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
+
+		return $request;
+	}
+
+	/**
+	 * @param $session_key
+	 * @param $cmid
+	 * @param bool $timer_exist
+	 * @return bool|Request
+	 */
+	public static function StartAttempt($session_key, $cmid, $timer_exist = false)
+	{
+		$post_fields[ "cmid" ] = $cmid;
+		$post_fields[ "sesskey" ] = $session_key;
+
+		if( $timer_exist === true)
+		{
+			$post_fields["_qf__mod_quiz_preflight_check_form"] = true;
+			$post_fields["submitbutton"] = "Почати спробу";
+		}
+
+		$request = false;
+
+		try {
+			$request = new Request(
+				Properties::$start_attempt,
+				$post_fields
+			);
+		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
+
+		return $request;
+	}
+
+	/**
+	 * @param array $form_fields
+	 * @return bool|Request
+	 */
+	public static function ProcessAttempt(array $form_fields)
+	{
+		// TODO Checking required fields
+		$request = false;
+
+		try {
+			$request = new Request(
+				Properties::$process_attempt,
+				$form_fields
+			);
+		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
+
+		return $request;
 	}
 }

@@ -5,13 +5,12 @@ namespace Resources;
 
 
 use Exception;
-use Factory\PassportFactory;
+use General\Signal;
+use Request\Request;
 use General\Passport;
 use FileSystem\Cookies;
-use General\Signal;
-use Parser\StudentParser;
-use Request\CurlErrorException;
-use Request\Login;
+use Factory\PassportFactory;
+use Parser\Resources\StudentParser;
 
 class Student extends Resource
 {
@@ -95,13 +94,10 @@ class Student extends Resource
 
 	protected function request_resource()
 	{
-		try {
-			$this->last_request = new Login(
-				$this->passport()->login(),
-				$this->passport()->password()
-			);
-		}
-		catch(CurlErrorException $e) { Signal::msg($e->getMessage()); }
+		$this->last_request = Request::Login(
+			$this->passport()->login(),
+			$this->passport()->password()
+		);
 	}
 
 	protected function use_parser()
