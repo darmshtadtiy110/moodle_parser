@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Resources\Question;
+namespace Resources\Questions;
 
 
 abstract class Question
@@ -76,6 +76,4 @@ abstract class Question
 	{
 		$this->variants[] = $variant;
 	}
-
-
 }

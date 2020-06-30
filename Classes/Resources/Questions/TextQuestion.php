@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Resources\Question;
+namespace Resources\Questions;
 
 
 class TextQuestion extends Question

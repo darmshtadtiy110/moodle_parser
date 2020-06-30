@@ -5,12 +5,12 @@ namespace Resources;
 
 
 use General\Signal;
-use General\Tools;
 use Request\Request;
 use Parser\Parser;
-use Parser\AttemptParser;
-use Parser\CourseParser;
-use Parser\QuizParser;
+use Parser\Resources\AttemptParser;
+use Parser\Resources\CourseParser;
+use Parser\Resources\QuizParser;
+
 use Request\CurlErrorException;
 
 trait Parsable
@@ -32,8 +32,8 @@ trait Parsable
 	protected function setParser()
 	{
 		// get resource name
-		$resource_class = Tools::get_object_class_name($this);
-
+		//$resource_class = Tools::get_object_class_name($this);
+		$resource_class = get_class($this);
 		// find needed parser
 		$parser_class = "\\Parser\\".$resource_class."Parser";
 		$this->parser = new $parser_class();

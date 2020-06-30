@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Parser;
+namespace Parser\Resources;
 
-
+use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
 use General\Signal;
 
@@ -32,7 +32,6 @@ class AttemptParser extends Parser
 				$question_text = $box->find("div.content>div.formulation.clearfix>div.qtext")[0]->text();
 				$answer_text = $box->find("label[for=$checked_input_id]")[0]->text();
 
-				// TODO Use question factory
 				$question_list[] = [
 					"question_text" => $question_text,
 					"answer_id" => $checked_input_id,

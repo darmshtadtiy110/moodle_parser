@@ -1,9 +1,10 @@
 <?php
 
 
-namespace Parser;
+namespace Parser\Resources;
 
 
+use Parser\Parser;
 use General\Signal;
 use Resources\Course;
 use Exception;

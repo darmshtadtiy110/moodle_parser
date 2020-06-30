@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Resources\Question;
+namespace Resources\Questions;
 
 
 class MediaQuestion extends Question

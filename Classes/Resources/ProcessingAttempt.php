@@ -7,7 +7,7 @@ namespace Resources;
 use Request\CurlErrorException;
 use Request\StartAttempt;
 
-use Resources\Question\Question;
+use Resources\Questions\Question;
 
 class ProcessingAttempt extends Attempt
 {

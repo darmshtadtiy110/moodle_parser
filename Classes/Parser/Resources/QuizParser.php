@@ -1,9 +1,10 @@
 <?php
 
 
-namespace Parser;
+namespace Parser\Resources;
 
 
+use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
 

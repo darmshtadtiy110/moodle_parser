@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Parser;
+namespace Parser\Resources;
 
-
+use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
 
 class CourseParser extends Parser
