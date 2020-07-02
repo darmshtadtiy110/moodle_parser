@@ -4,6 +4,8 @@
 namespace Resources;
 
 
+use Parser\Parser;
+
 abstract class Resource
 {
 	use Parsable;
@@ -29,6 +31,8 @@ abstract class Resource
 
 	public function loadFromArray($param_array)
 	{
+		$param_array["id"] = Parser::parseExpressionFromLink("id", $param_array["link"]);
+
 		$class_parameters = get_class_vars(get_class($this));
 
 		foreach ($param_array as $param => $value)
@@ -40,5 +44,13 @@ abstract class Resource
 		}
 
 		return $this;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getId()
+	{
+		return $this->id;
 	}
 }

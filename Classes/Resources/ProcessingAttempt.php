@@ -107,7 +107,19 @@ class ProcessingAttempt extends Attempt
 
 	public function process()
 	{
-		$next_page_request = AttemptProcessor::Random($this);
+		// TODO process questions by them quantity
+		/**
+		 * while () { $this->processor() }
+		 * in processor() realize following code
+		 */
+
+		// TODO Select processor
+		$selected_answer = AttemptProcessor::Random($this);
+
+		$post_fields = $this->getFormInputs();
+		$post_fields[$selected_answer["input_name"]] = $selected_answer["input_value"];
+
+		$next_page_request = Request::ProcessAttempt($post_fields);
 		$this->parser->setParsePage($next_page_request->response());
 		$this->use_parser();
 	}

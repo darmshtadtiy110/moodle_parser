@@ -99,15 +99,14 @@ class StudentParser extends Parser
 
 			if($course_name != "" && $course_link != "")
 			{
-				$id = $this->parseIdFromLink($course_link);
-
 				$course = new Course();
 
-				$courses_array[$id] = $course->loadFromArray([
-					"id" => $id,
+				$course->loadFromArray([
 					"name" => $course_name,
 					"link" => $course_link
 				]);
+
+				$courses_array[$course->getId()] = $course;
 			}
 		}
 

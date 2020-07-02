@@ -78,7 +78,6 @@ class QuizParser extends Parser
 				{
 					$attempt_review_link = $review[0]->attr("href");
 					$attempt_list[$index]["link"] = $attempt_review_link;
-					$attempt_list[$index]["id"] = $this->parseIdFromLink($attempt_review_link);
 				}
 
 				$grade = (int) $grade[0]->text();

@@ -19,12 +19,12 @@ abstract class Parser
 		$this->parse_page = $parse_page;
 	}
 
-	protected function parseIdFromLink($link)
+	public static function parseExpressionFromLink($exp, $link)
 	{
 		$link_array = parse_url($link);
 		parse_str($link_array["query"], $link_query);
 
-		if(isset($link_query["id"])) return $link_query["id"];
+		if(isset($link_query[$exp])) return $link_query[$exp];
 		return false;
 	}
 }

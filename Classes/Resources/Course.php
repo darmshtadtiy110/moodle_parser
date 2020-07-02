@@ -14,10 +14,8 @@ class Course extends Resource
 
 	protected function use_parser()
 	{
-		foreach ( $this->parser()->getQuizList() as $quiz_array)
+		foreach ( $this->parser()->getQuizList() as $quiz)
 		{
-			$quiz = new Quiz();
-			$quiz->loadFromArray($quiz_array);
 
 			$this->setChild($quiz);
 		}
