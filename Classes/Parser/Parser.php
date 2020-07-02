@@ -5,6 +5,10 @@ namespace Parser;
 
 
 use DiDom\Document;
+use DiDom\Element;
+use DOMElement;
+use DiDom\Exceptions\InvalidSelectorException;
+use General\Signal;
 
 abstract class Parser
 {
@@ -17,6 +21,25 @@ abstract class Parser
 	public function setParsePage($parse_page)
 	{
 		$this->parse_page = $parse_page;
+	}
+
+	/**
+	 * @param $expression
+	 * @return bool|Element[]|DOMElement[]
+	 */
+	public function find($expression)
+	{
+		$element = false;
+		try {
+			$element = $this->parse_page->find($expression);
+		}
+		catch (InvalidSelectorException $e) {
+			Signal::msg($e->getMessage());
+			Signal::msg($e->getTraceAsString());
+		}
+
+		/**  */
+		return $element;
 	}
 
 	public static function parseExpressionFromLink($exp, $link)
