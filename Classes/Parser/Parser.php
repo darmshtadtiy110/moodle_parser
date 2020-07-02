@@ -24,6 +24,14 @@ abstract class Parser
 	}
 
 	/**
+	 * @return Document
+	 */
+	public function getParsePage()
+	{
+		return $this->parse_page;
+	}
+
+	/**
 	 * @param $expression
 	 * @return bool|Element[]|DOMElement[]
 	 */
