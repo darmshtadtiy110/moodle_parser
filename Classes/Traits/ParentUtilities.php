@@ -13,9 +13,6 @@ trait ParentUtilities
 	{
 		$resource_class = Tools::get_object_class_name($resource);
 
-		//$list_name = strtolower($resource_class)."_list";
-
-
 		$list_name = Tools::camel_to_snake($resource_class)."_list";
 
 		if( !array_key_exists($resource->id, $this->$list_name) )
@@ -42,5 +39,14 @@ trait ParentUtilities
 			return $this->$list_name[$id];
 
 		return false;
+	}
+
+	public function getList($child_type)
+	{
+		$list_name = Tools::camel_to_snake($child_type)."_list";
+
+		if(property_exists($this, $list_name))
+			return $this->{$list_name};
+		else return null;
 	}
 }
