@@ -31,6 +31,11 @@ abstract class Parser
 		return $this->parse_page;
 	}
 
+	public function purgePage()
+	{
+		$this->parse_page = null;
+	}
+
 	/**
 	 * @param $expression
 	 * @return bool|Element[]|DOMElement[]
