@@ -4,10 +4,9 @@
 namespace Resources;
 
 
+use General\Request;
 use General\AttemptProcessor;
 use Parser\Resources\ProcessingAttemptParser;
-use Request\Request;
-use Resources\Questions\Question;
 
 class ProcessingAttempt extends Attempt
 {

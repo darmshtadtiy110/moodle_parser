@@ -1,185 +1,160 @@
 <?php
-/**
- * IT'S FULLY LEGACY UNUSED CODE
- * LIVING THERE A LONG TIME MIGHT BE DANGEROUS FOR YOU!
- */
+
 
 namespace General;
-use \DiDom\Document;
-use Exception;
 
-class RequestOLD
+
+use DiDom\Document;
+use FileSystem\Cookies;
+use Resources\Student;
+use General\Exceptions\CurlErrorException;
+
+class Request
 {
-	private static $auth_url = "/login/index.php";
+	/** @var string */
+	private $url;
 
-	private static $start_attempt = "/mod/quiz/startattempt.php";
+	/** @var Cookies */
+	private $cookies;
 
-	private static $process_attempt = "/mod/quiz/processattempt.php";
+	/** @var array */
+	private $post_fields;
+
+	/** @var resource */
+	private $channel;
+
+	/** @var Document */
+	private $response;
 
 	/**
-	 * @param $full_url
+	 * Request constructor.
+	 * @param $url
 	 * @param array $post_fields
-	 * @return Document
-	 * @throws Exception
+	 * @throws CurlErrorException
 	 */
-	private static function MakeRequest($full_url, $post_fields = [])
+	public function __construct($url, $post_fields = [])
 	{
-		$channel = curl_init();
+		$this->url = $url;
+		$this->post_fields = $post_fields;
+		$this->cookies = Student::getInstance()->cookies();
 
-		if(is_array($post_fields) && count($post_fields) > 0)
-		{
-			curl_setopt($channel, CURLOPT_POST, 1);
-			curl_setopt($channel, CURLOPT_POSTFIELDS, $post_fields);
-		}
-
-		curl_setopt($channel, CURLOPT_URL, $full_url);
-		curl_setopt($channel, CURLOPT_HEADER, 0);
-		curl_setopt($channel, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($channel, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($channel, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($channel, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($channel, CURLOPT_COOKIEJAR, FileSystem::cookies());
-		curl_setopt($channel, CURLOPT_COOKIEFILE, FileSystem::cookies());
-
-		$html = curl_exec($channel);
-
-		if(curl_errno($channel)) throw new Exception (curl_error($channel));
-
-		curl_close($channel);
-
-		return new Document($html);
+		$this->make();
 	}
 
-	public static function Multi($url_list, $callback_func, $result_file_handle)
+	/**
+	 * @throws CurlErrorException
+	 */
+	private function make()
 	{
-		$curl_multi_instance = curl_multi_init();
+		$this->channel = curl_init();
 
-		$multi_channels = [];
-
-		foreach ($url_list as $url)
+		if(is_array($this->post_fields) && count($this->post_fields) > 0)
 		{
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL,            $url);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
-			curl_setopt($ch, CURLOPT_MAXCONNECTS,    10);
-			curl_setopt($ch, CURLOPT_HEADER,         false);
-			curl_setopt($ch, CURLOPT_FAILONERROR,    true);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_COOKIEJAR,      FileSystem::cookies());
-			curl_setopt($ch, CURLOPT_COOKIEFILE,     FileSystem::cookies());
-
-			curl_multi_add_handle($curl_multi_instance, $ch);
-
-			$multi_channels[$url] = $ch;
+			curl_setopt($this->channel, CURLOPT_POST, 1);
+			curl_setopt($this->channel, CURLOPT_POSTFIELDS, $this->post_fields);
 		}
 
-		$active = null;
+		curl_setopt($this->channel, CURLOPT_URL, $this->url);
+		curl_setopt($this->channel, CURLOPT_HEADER, 0);
+		curl_setopt($this->channel, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($this->channel, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($this->channel, CURLOPT_CONNECTTIMEOUT, 30);
+		curl_setopt($this->channel, CURLOPT_SSL_VERIFYPEER, false);
 
-		do {
-			$mrc = curl_multi_exec($curl_multi_instance, $active);
-		}
-		while($mrc == CURLM_CALL_MULTI_PERFORM);
+		curl_setopt($this->channel, CURLOPT_COOKIEJAR, $this->cookies->getFullPath());
+		curl_setopt($this->channel, CURLOPT_COOKIEFILE, $this->cookies->getFullPath());
 
+		$html = curl_exec($this->channel);
 
-		while($active && $mrc == CURLM_OK)
-		{
-			if(curl_multi_select($curl_multi_instance) == -1)
-				continue;
+		if(curl_errno($this->channel)) throw new CurlErrorException (curl_error($this->channel));
 
-			do {
-				$mrc = curl_multi_exec($curl_multi_instance, $active);
-			}
-			while ($mrc == CURLM_CALL_MULTI_PERFORM);
-		}
+		curl_close($this->channel);
 
-		call_user_func(["\General\ParserCallbackFunctions", $callback_func], $curl_multi_instance, $multi_channels, $result_file_handle);
+		$this->response = new Document($html);
+	}
 
-		curl_multi_close($curl_multi_instance);
+	public function getUrl()
+	{
+		return $this->url;
+	}
+
+	/**
+	 * @return Document
+	 */
+	public function response()
+	{
+		return $this->response;
 	}
 
 	/**
 	 * @param $login
 	 * @param $password
-	 * @return bool|Document
+	 * @return bool|Request
 	 */
 	public static function Login($login, $password)
 	{
-		$post_fields = [
-			"username" => $login,
-			"password" => $password
-		];
-
-		$start_page = false;
-
-		$auth_full_url = Parser::$target.self::$auth_url;
-
+		$request = false;
 		try {
-			$start_page = self::MakeRequest($auth_full_url, $post_fields);
+			$request = new Request(
+				Properties::$login_url,
+				[
+					"username" => $login,
+					"password" => $password
+				]
+			);
 		}
-		catch (Exception $e) {
-			echo "Auth request exception: ".$e->getMessage()."\n";
-		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
 
-		return $start_page;
-	}
-
-	public static function Logout()
-	{
-		return false;
+		return $request;
 	}
 
 	/**
-	 * @param $post_fields
-	 * @return Document
+	 * @param $session_key
+	 * @param $cmid
+	 * @param bool $timer_exist
+	 * @return bool|Request
 	 */
-	public static function StartAttempt($post_fields)
+	public static function StartAttempt($session_key, $cmid, $timer_exist = false)
 	{
-		$res = false;
+		$post_fields[ "cmid" ] = $cmid;
+		$post_fields[ "sesskey" ] = $session_key;
+
+		if( $timer_exist === true)
+		{
+			$post_fields["_qf__mod_quiz_preflight_check_form"] = true;
+			$post_fields["submitbutton"] = "Почати спробу";
+		}
+
+		$request = false;
 
 		try {
-			$res = self::MakeRequest(Parser::$target.self::$start_attempt, $post_fields);
+			$request = new Request(
+				Properties::$start_attempt,
+				$post_fields
+			);
 		}
-		catch (Exception $e) {
-			echo "StartAttempt exception ".$e->getMessage();
-		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
 
-		return $res;
-	}
-
-	/**
-	 * @deprecated Run MakeRequest instead
-	 * @param $full_url
-	 * @return Document
-	 */
-	public static function Page($full_url)
-	{
-		$res = false;
-		try {
-			$res = self::MakeRequest($full_url);
-		}
-		catch (Exception $e) {
-			echo "Get page exception ".$e->getMessage();
-		}
-		return $res;
+		return $request;
 	}
 
 	/**
 	 * @param array $form_fields
-	 * @return bool|Document
+	 * @return bool|Request
 	 */
-	public static function ProcessAttempt($form_fields = [])
+	public static function ProcessAttempt(array $form_fields)
 	{
-		$res = false;
+		// TODO Checking required fields
+		$request = false;
 
 		try {
-			$res = self::MakeRequest(Parser::$target.self::$process_attempt, $form_fields);
+			$request = new Request(
+				Properties::$process_attempt,
+				$form_fields
+			);
 		}
-		catch (Exception $e) {
-			echo "ProcessAttempt request exception: ".$e->getMessage();
-		}
+		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
 
-		return $res;
+		return $request;
 	}
 }

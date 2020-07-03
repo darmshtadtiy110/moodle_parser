@@ -3,10 +3,14 @@
 
 namespace Resources;
 
+use General\Resource;
+use Interfaces\ParentResource;
 
-class Course extends Resource
+use Traits\ParentUtilities;
+
+class Course extends Resource implements ParentResource
 {
-	use ParentResource, Parsable;
+	use ParentUtilities;
 
 	private $quiz_list = [];
 
@@ -16,7 +20,6 @@ class Course extends Resource
 	{
 		foreach ( $this->parser()->getQuizList() as $quiz)
 		{
-
 			$this->setChild($quiz);
 		}
 	}

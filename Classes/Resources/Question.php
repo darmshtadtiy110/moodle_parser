@@ -1,15 +1,18 @@
 <?php
 
 
-namespace Resources\Questions;
+namespace Resources;
 
+use General\Resource;
+use Parser\Resources\QuestionParser;
 
-use Parser\Resources\Questions\QuestionParser;
-use Resources\Parsable;
+use Interfaces\ParentResource;
 
-class Question
+use Traits\ParentUtilities;
+
+class Question extends Resource implements ParentResource
 {
-	use Parsable;
+	use ParentUtilities;
 
 	/** @var int */
 	protected $id;
@@ -20,13 +23,11 @@ class Question
 	/** @var String */
 	protected $text;
 
-	/** @var Variant */
 	protected $answer;
 
 	/** @var bool */
 	protected $state;
 
-	/** @var Variant[] */
 	protected $variants = [];
 
 	/** @var integer */
@@ -43,17 +44,20 @@ class Question
 	public function __construct($number)
 	{
 		$this->number = $number;
-		$this->setParser();
+
+		parent::__construct();
 	}
 
 	protected function use_parser()
 	{
 		// 1. identity question block
-		// 2. parse question text
-		// 3. parse variants
-
 		$this->parser->identityQuestionBlock($this);
+
+		// 2. parse question text
 		$this->text = $this->parser->getQuestionText();
+
+		// 3. parse variants
+		$this->variants = $this->parser->getVariants();
 
 	}
 

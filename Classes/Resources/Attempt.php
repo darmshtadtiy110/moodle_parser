@@ -3,8 +3,13 @@
 
 namespace Resources;
 
+use General\Resource;
 
-abstract class Attempt extends Resource
+use Interfaces\ParentResource;
+
+use Traits\ParentUtilities;
+
+abstract class Attempt extends Resource implements ParentResource
 {
-	use ParentResource;
+	use ParentUtilities;
 }

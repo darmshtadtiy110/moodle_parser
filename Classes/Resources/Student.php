@@ -5,16 +5,24 @@ namespace Resources;
 
 
 use Exception;
+
 use General\Signal;
-use Request\Request;
+use General\Request;
 use General\Passport;
+use General\Resource;
+
 use FileSystem\Cookies;
 use Factory\PassportFactory;
+
 use Parser\Resources\StudentParser;
 
-class Student extends Resource
+use Interfaces\ParentResource;
+
+use Traits\ParentUtilities;
+
+class Student extends Resource implements ParentResource
 {
-	use ParentResource, Parsable;
+	use ParentUtilities;
 
 	/** @var Student */
 	private static $instance;

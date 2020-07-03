@@ -1,14 +1,13 @@
 <?php
 
 
-namespace Parser\Resources\Questions;
+namespace Parser\Resources;
 
 
 use DiDom\Element;
 use General\Signal;
 use Parser\Parser;
-use Resources\Questions\Question;
-use Resources\Questions\TextQuestion;
+use Resources\Question;
 use DiDom\Exceptions\InvalidSelectorException;
 
 class QuestionParser extends Parser
@@ -54,23 +53,15 @@ class QuestionParser extends Parser
 		return $text;
 	}
 
-	/**
-	 * @deprecated
-	 * @param Element $question_block
-	 * @return Question|TextQuestion
-	 */
-	public function getVariants(Element $question_block)
+
+	public function getVariants()
 	{
 		try {
-			$variant_nodes = $question_block->find("div.answer>div");
-
-			// as default - text question
-			$question = new Question(80);
-
-			//$question->parser->setQuestionBlock($question_block);
+			$variant_nodes = $this->question_block->find("div.answer>div");
 
 			foreach ($variant_nodes as $variant)
 			{
+
 				$variant_text = $variant->find("label")[0]->text();
 				$variant_text = substr($variant_text, 3);
 
@@ -78,16 +69,10 @@ class QuestionParser extends Parser
 				$answer_input_name = $answer_input_node[0]->attr("name");
 				$answer_input_value = $answer_input_node[0]->attr("value");
 
-				$question->setVariant([
-					"value" => $variant_text,
-					"input_name" => $answer_input_name,
-					"input_value" => $answer_input_value
-				]);
+
 			}
 		}
 		catch (InvalidSelectorException $e) { Signal::msg("IdentQuestion error: ".$e->getMessage()); }
 
-		/** @var Question $question */
-		return $question;
 	}
 }

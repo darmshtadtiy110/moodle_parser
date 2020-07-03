@@ -1,14 +1,13 @@
 <?php
 
 
-namespace Request;
+namespace General\Exceptions;
 
 
 use Exception;
 
 class CurlErrorException extends Exception
 {
-
 	/**
 	 * CurlErrorException constructor.
 	 * @param string $curl_error

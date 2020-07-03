@@ -3,10 +3,15 @@
 
 namespace Resources;
 
+use General\Resource;
 
-class Quiz extends Resource
+use Interfaces\ParentResource;
+
+use Traits\ParentUtilities;
+
+class Quiz extends Resource implements ParentResource
 {
-	use ParentResource;
+	use ParentUtilities;
 
 	private $finished_attempt_list = [];
 

@@ -1,14 +1,17 @@
 <?php
 
 
-namespace Resources;
-
+namespace General;
 
 use Parser\Parser;
 
-abstract class Resource
+use Interfaces\Parsable;
+
+use Traits\ParserUtilities;
+
+abstract class Resource implements Parsable
 {
-	use Parsable;
+	use ParserUtilities;
 
 	/** @var int */
 	protected $id;

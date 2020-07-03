@@ -1,12 +1,13 @@
 <?php
 
 
-namespace Resources;
+namespace Traits;
 
 
 use General\Tools;
+use General\Resource;
 
-trait ParentResource
+trait ParentUtilities
 {
 	public function setChild(Resource $resource)
 	{

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Request;
+namespace General;
 
 
 class Properties

@@ -1,19 +1,19 @@
 <?php
 
 
-namespace Resources;
+namespace Traits;
 
 
 use General\Signal;
-use Request\Request;
+use General\Request;
 use Parser\Parser;
 use Parser\Resources\FinishedAttemptParser;
 use Parser\Resources\CourseParser;
 use Parser\Resources\QuizParser;
 
-use Request\CurlErrorException;
+use General\Exceptions\CurlErrorException;
 
-trait Parsable
+trait ParserUtilities
 {
 	/** @var Parser */
 	protected $parser;

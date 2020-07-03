@@ -3,6 +3,7 @@
 
 namespace Resources;
 
+use General\Resource;
 
 class Document extends Resource
 {

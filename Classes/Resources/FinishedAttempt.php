@@ -4,7 +4,7 @@
 namespace Resources;
 
 
-use Parser\AttemptParser;
+//use Parser\Resources\FinishedAttemptParser;
 
 class FinishedAttempt extends Attempt
 {
@@ -17,11 +17,6 @@ class FinishedAttempt extends Attempt
 	public function getGrade()
 	{
 		return $this->grade;
-	}
-
-	protected function setParser()
-	{
-		$this->parser = new AttemptParser();
 	}
 
 	protected function use_parser()
