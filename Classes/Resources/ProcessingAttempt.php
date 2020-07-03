@@ -23,10 +23,7 @@ class ProcessingAttempt extends Attempt
 	/** @var bool */
 	private $timer_exist = false;
 
-	/** @var Question */
-	private $current_question;
-
-	/** @var array */
+	/** @var Question[] */
 	private $question_list = [];
 
 	private $form_inputs = [];
@@ -82,32 +79,86 @@ class ProcessingAttempt extends Attempt
 
 	protected function use_parser()
 	{
-		$questions_on_current_page = $this->parser->getQuestions();
-		$this->question_list = array_merge($this->question_list, $questions_on_current_page);
-		$this->current_question = $questions_on_current_page[0];
+		// 1. get list status of all questions
+		// 2. parse those of which on current page
+		// 3. parse hidden inputs on page
+
+		$this->updateQuestionList();
+		$this->parseCurrentQuestions();
 
 		$this->form_inputs = $this->parser->parseInputs();
 	}
 
-	/**
-	 * @return Question | false
-	 */
-	public function getCurrentQuestion()
+	private function updateQuestionList()
 	{
-		return $this->current_question;
+		$question_status_array = $this->parser->getQuestionsStatus();
+
+		foreach ($question_status_array as $number => $question_array)
+		{
+			$question = $this->getQuestion($number);
+
+			if(!$question)
+			{
+				$new_question = new Question($number);
+				$new_question->setSaved($question_array["saved"]);
+				$new_question->setCurrent($question_array["current"]);
+
+				$this->setQuestion($new_question);
+			}
+			else {
+				$question->setSaved($question_array["saved"]);
+				$question->setCurrent($question_array["current"]);
+			}
+		}
+	}
+
+	private function parseCurrentQuestions()
+	{
+		foreach ($this->question_list as $question)
+		{
+			if($question->isCurrent())
+			{
+				$question->parser()->setParsePage($this->parser->getParsePage());
+				$question->parse();
+			}
+		}
 	}
 
 	/**
-	 * @param Question $current_question
+	 * @param int $number
+	 * @return Question|bool
 	 */
-	public function setCurrentQuestion(Question $current_question)
+	public function getQuestion($number)
 	{
-		$this->current_question = $current_question;
+		if(array_key_exists($number, $this->question_list))
+			return $this->question_list[$number];
+		else return false;
+	}
+
+	/**
+	 * @param Question $question
+	 */
+	public function setQuestion(Question $question)
+	{
+		if(!array_key_exists($question->getNumber(), $this->question_list))
+			$this->question_list[$question->getNumber()] = $question;
+	}
+
+	public function getCurrentQuestions()
+	{
+		$current = [];
+		foreach ($this->question_list as $question)
+		{
+			if($question->isCurrent()) $current[] = $question;
+		}
+		return $current;
 	}
 
 	public function process()
 	{
-		// TODO process questions by them quantity
+		// TODO Replace processors to questions
+		// TODO Processor must work with separate questions
+		// TODO process questions by them quantity on attempt
 		/**
 		 * while () { $this->processor() }
 		 * in processor() realize following code

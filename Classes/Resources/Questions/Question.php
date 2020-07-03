@@ -4,37 +4,67 @@
 namespace Resources\Questions;
 
 
-//use Resources\Parsable;
+use Parser\Resources\Questions\QuestionParser;
+use Resources\Parsable;
 
-abstract class Question
+class Question
 {
-	//use Parsable;
+	use Parsable;
 
-	/** @var String */
+	/** @var int */
 	protected $id;
+
+	/** @var int */
+	protected $number;
 
 	/** @var String */
 	protected $text;
 
-	/** @var String */
+	/** @var Variant */
 	protected $answer;
 
 	/** @var bool */
 	protected $state;
 
-	/** @var array */
+	/** @var Variant[] */
 	protected $variants = [];
 
 	/** @var integer */
 	protected $grade;
 
-	public function __construct($question_text)
+	/** @var bool */
+	protected $current = false;
+
+	protected $saved = false;
+
+	/** @var QuestionParser */
+	protected $parser;
+
+	public function __construct($number)
 	{
-		$this->text = $question_text;
+		$this->number = $number;
+		$this->setParser();
+	}
+
+	protected function use_parser()
+	{
+		// 1. identity question block
+		// 2. parse question text
+		// 3. parse variants
+
+		$this->parser->identityQuestionBlock($this);
+		$this->text = $this->parser->getQuestionText();
+
+	}
+
+	public function parse()
+	{
+		$this->use_parser();
+		$this->parser()->purgePage();
 	}
 
 	/**
-	 * @return String
+	 * @return int
 	 */
 	public function getId()
 	{
@@ -60,7 +90,7 @@ abstract class Question
 	/**
 	 * @return bool
 	 */
-	public function isState()
+	public function getState()
 	{
 		return $this->state;
 	}
@@ -71,6 +101,46 @@ abstract class Question
 	public function getVariants()
 	{
 		return $this->variants;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getNumber()
+	{
+		return $this->number;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCurrent()
+	{
+		return $this->current;
+	}
+
+	/**
+	 * @param bool $current
+	 */
+	public function setCurrent($current)
+	{
+		$this->current = $current;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSaved()
+	{
+		return $this->saved;
+	}
+
+	/**
+	 * @param bool $saved
+	 */
+	public function setSaved($saved)
+	{
+		$this->saved = $saved;
 	}
 
 	/**

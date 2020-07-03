@@ -51,7 +51,6 @@ abstract class Parser
 			Signal::msg($e->getTraceAsString());
 		}
 
-		/**  */
 		return $element;
 	}
 

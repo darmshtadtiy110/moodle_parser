@@ -31,7 +31,8 @@ abstract class Resource
 
 	public function loadFromArray($param_array)
 	{
-		$param_array["id"] = Parser::parseExpressionFromLink("id", $param_array["link"]);
+		if(array_key_exists("link", $param_array))
+			$param_array["id"] = Parser::parseExpressionFromLink("id", $param_array["link"]);
 
 		$class_parameters = get_class_vars(get_class($this));
 
