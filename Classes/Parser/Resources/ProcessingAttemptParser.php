@@ -7,31 +7,15 @@ namespace Parser\Resources;
 use General\Signal;
 use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
-use Parser\Resources\Questions\QuestionParser;
 
 class ProcessingAttemptParser extends Parser
 {
-	/**
-	 * @return array
-	 */
-	public function getQuestions()
+	public function getAttemptId()
 	{
-		$questions_array = [];
+		$summary_link_node = $this->find("a.endtestlink");
+		$summary_url = $summary_link_node[0]->attr("href");
 
-		try {
-			// find question boxes on page
-			$question_boxes = $this->parse_page->find("div.que");
-
-			if( empty($question_boxes) ) return $questions_array;
-
-			foreach ($question_boxes as $box)
-			{
-				$questions_array[] = QuestionParser::IdentQuestion($box);
-			}
-		}
-		catch (InvalidSelectorException $e) {}
-
-		return $questions_array;
+		return self::parseExpressionFromLink("attempt", $summary_url);
 	}
 
 	public function parseInputs()
@@ -60,5 +44,39 @@ class ProcessingAttemptParser extends Parser
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * @return array ["number" => int, "saved" => bool, "current" => bool]
+	 */
+	public function getQuestionsStatus()
+	{
+		$status_array = [];
+		$question_buttons = $this->find("div.qn_buttons.clearfix.multipages>a");
+
+		$counter = 1;
+
+		foreach ($question_buttons as $button)
+		{
+
+			$question_array = [
+				"number" => $counter,
+				"saved" => false,
+				"current" => false
+			];
+
+			$button_classes = $button->classes();
+
+			if ($button_classes->contains("answersaved"))
+				$question_array["saved"] = true;
+
+			if ($button_classes->contains("thispage"))
+				$question_array["current"] = true;
+
+			$status_array[$counter] = $question_array;
+			$counter++;
+		}
+
+		return $status_array;
 	}
 }
