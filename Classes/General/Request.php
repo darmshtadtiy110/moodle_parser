@@ -96,7 +96,7 @@ class Request
 		$request = false;
 		try {
 			$request = new Request(
-				Properties::$login_url,
+				Properties::login(),
 				[
 					"username" => $login,
 					"password" => $password
@@ -129,7 +129,7 @@ class Request
 
 		try {
 			$request = new Request(
-				Properties::$start_attempt,
+				Properties::start_attempt(),
 				$post_fields
 			);
 		}
@@ -144,12 +144,11 @@ class Request
 	 */
 	public static function ProcessAttempt(array $form_fields)
 	{
-		// TODO Checking required fields
 		$request = false;
 
 		try {
 			$request = new Request(
-				Properties::$process_attempt,
+				Properties::process_attempt(),
 				$form_fields
 			);
 		}
