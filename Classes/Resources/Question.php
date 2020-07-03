@@ -44,8 +44,6 @@ class Question extends Resource implements ParentResource
 	public function __construct($number)
 	{
 		$this->number = $number;
-
-		parent::__construct();
 	}
 
 	protected function use_parser()

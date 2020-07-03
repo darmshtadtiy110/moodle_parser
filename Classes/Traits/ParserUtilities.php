@@ -4,14 +4,13 @@
 namespace Traits;
 
 
+use General\Properties;
 use General\Signal;
 use General\Request;
-use Parser\Parser;
-use Parser\Resources\FinishedAttemptParser;
-use Parser\Resources\CourseParser;
-use Parser\Resources\QuizParser;
 
 use General\Exceptions\CurlErrorException;
+use General\Tools;
+use Parser\Parser;
 
 trait ParserUtilities
 {
@@ -21,9 +20,6 @@ trait ParserUtilities
 	/** @var Request */
 	protected $last_request;
 
-	/**
-	 * @return Parser|CourseParser|QuizParser|FinishedAttemptParser
-	 */
 	public function parser()
 	{
 		return $this->parser;
@@ -31,20 +27,22 @@ trait ParserUtilities
 
 	protected function setParser()
 	{
-		// get resource name
-		//$resource_class = Tools::get_object_class_name($this);
 		$resource_class = get_class($this);
-		// find needed parser
 		$parser_class = "\\Parser\\".$resource_class."Parser";
 		$this->parser = new $parser_class();
 	}
 
-	protected function request_resource()
+	protected function getParsablePage()
 	{
-		if( $this->link != "")
+		$resource_type = Tools::get_object_class_name($this);
+
+		if( is_callable( "Properties::".$resource_type, true ) )
 		{
+			$link = Properties::$resource_type().$this->getId();
+
 			try {
-				$this->last_request = new Request($this->link);
+				$resource_request = new Request($link);
+				$this->parser()->setParsePage($resource_request->response());
 			}
 			catch (CurlErrorException $e) {
 				Signal::msg("Curl error in request for ".get_class()." ".$e->getMessage());
@@ -54,8 +52,8 @@ trait ParserUtilities
 
 	public function parse()
 	{
-		$this->request_resource();
-		$this->parser->setParsePage($this->last_request->response());
+		$this->setParser();
+		$this->getParsablePage();
 		$this->use_parser();
 	}
 

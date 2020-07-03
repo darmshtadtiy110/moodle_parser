@@ -67,13 +67,14 @@ class ProcessingAttempt extends Attempt
 		return $this->form_inputs;
 	}
 
-	protected function request_resource()
+	protected function getParsablePage()
 	{
-		$this->last_request = Request::StartAttempt(
+		$start_attempt_request = Request::StartAttempt(
 			$this->session_key,
 			$this->cmid,
 			$this->timer_exist
 		);
+		$this->parser()->setParsePage($start_attempt_request->response());
 	}
 
 	protected function use_parser()
@@ -117,6 +118,7 @@ class ProcessingAttempt extends Attempt
 		{
 			if($question->isCurrent())
 			{
+				$question->setParser();
 				$question->parser()->setParsePage($this->parser->getParsePage());
 				$question->parse();
 			}

@@ -19,14 +19,6 @@ abstract class Resource implements Parsable
 	/** @var string */
 	protected $name;
 
-	/** @var string */
-	protected $link;
-
-	public function __construct()
-	{
-		$this->setParser();
-	}
-
 	public function loadFromDB()
 	{
 		return false;
@@ -35,7 +27,10 @@ abstract class Resource implements Parsable
 	public function loadFromArray($param_array)
 	{
 		if(array_key_exists("link", $param_array))
+		{
 			$param_array["id"] = Parser::parseExpressionFromLink("id", $param_array["link"]);
+			unset($param_array["link"]);
+		}
 
 		$class_parameters = get_class_vars(get_class($this));
 

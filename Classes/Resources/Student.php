@@ -100,12 +100,13 @@ class Student extends Resource implements ParentResource
 		$this->parse();
 	}
 
-	protected function request_resource()
+	protected function getParsablePage()
 	{
-		$this->last_request = Request::Login(
+		$login_request = Request::Login(
 			$this->passport()->login(),
 			$this->passport()->password()
 		);
+		$this->parser()->setParsePage($login_request->response());
 	}
 
 	protected function use_parser()
