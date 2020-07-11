@@ -4,48 +4,51 @@
 namespace Resources;
 
 use General\Resource;
+use Parser\Resources\QuizParser;
 
-use Interfaces\ParentResource;
 
-use Traits\ParentUtilities;
-
-class Quiz extends Resource implements ParentResource
+class Quiz extends Resource
 {
-	use ParentUtilities;
+	private $attempt_list = [];
 
-	private $finished_attempt_list = [];
+	private $session_key;
 
-	/** @var ProcessingAttempt */
-	private $processing_attempt;
+	/** @var bool */
+	private $timer_exist;
+
+	public function __construct($id)
+	{
+		$this->parser = new QuizParser();
+		parent::__construct($id);
+	}
+
+	public function getAttempt($id)
+	{
+		if(array_key_exists($id, $this->attempt_list))
+			return $this->attempt_list[$id];
+		return false;
+	}
+
+	public function setAttempt(Attempt $attempt)
+	{
+		$this->attempt_list[$attempt->getId()] = $attempt;
+	}
+
+	public function getTimerExist()
+	{
+		return $this->timer_exist;
+	}
+
+	public function getSessionKey()
+	{
+		return $this->session_key;
+	}
 
 	protected function use_parser()
 	{
-		$attempt_list = $this->parser()->getAttemptList();
-
-		foreach ($attempt_list as $attempt_array)
-		{
-			if($attempt_array["finished"] == true)
-			{
-				$attempt = new FinishedAttempt();
-
-				$attempt->loadFromArray($attempt_array);
-
-				$this->setChild($attempt);
-			}
-			else {
-				$this->processing_attempt = new ProcessingAttempt();
-
-				$this->processing_attempt->loadFromArray($attempt_array);
-			}
-		}
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getAttemptList()
-	{
-		return $this->finished_attempt_list;
+		$this->session_key = $this->parser->getSessionKey();
+		$this->timer_exist = $this->parser->getTimer();
+		$this->attempt_list = $this->parser->getAttemptList();
 	}
 
 	public function getBestAttempt()
@@ -58,22 +61,15 @@ class Quiz extends Resource implements ParentResource
 	 */
 	public function startProcessingAttempt()
 	{
-		if( !$this->processing_attempt instanceof ProcessingAttempt )
-			$this->processing_attempt = new ProcessingAttempt();
-
-		$this->processing_attempt->setSessionKey( $this->parser()->getSessionKey() );
-
-		$this->processing_attempt->setCmid( $this->parser()->getQuizId() );
-
-		$this->processing_attempt->setTimerExist( $this->parser()->getTimer() );
-
-		$this->processing_attempt->parse();
-
-		return $this->processing_attempt;
-	}
-
-	public function processingAttempt()
-	{
-		return $this->processing_attempt;
+		if(
+			array_key_exists(0, $this->attempt_list) &&
+			$this->attempt_list[0] instanceof ProcessingAttempt
+		){
+			$this->attempt_list[0]->parse();
+			return $this->attempt_list[0];
+		}
+		else {
+			return Attempt::Start($this);
+		}
 	}
 }
