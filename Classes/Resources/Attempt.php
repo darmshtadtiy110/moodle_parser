@@ -5,11 +5,21 @@ namespace Resources;
 
 use General\Resource;
 
-use Interfaces\ParentResource;
-
-use Traits\ParentUtilities;
-
-abstract class Attempt extends Resource implements ParentResource
+abstract class Attempt extends Resource
 {
-	use ParentUtilities;
+	/**
+	 * @param Quiz $quiz
+	 * @return ProcessingAttempt
+	 */
+	public static function Start(Quiz $quiz)
+	{
+		$new_attempt = new ProcessingAttempt(
+			0,
+			$quiz->getSessionKey(),
+			$quiz->getId(),
+			$quiz->getTimerExist()
+		);
+		$new_attempt->parse();
+		return $new_attempt;
+	}
 }
