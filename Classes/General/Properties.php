@@ -18,9 +18,16 @@ class Properties
 
 	private static $process_attempt = "/mod/quiz/processattempt.php";
 
+	private static $user_profile = "/user/profile.php?id=";
+
 	public static function login()
 	{
 		return self::$target_url.self::$login_url;
+	}
+
+	public static function Profile()
+	{
+		return self::$target_url.self::$user_profile;
 	}
 
 	public static function start_attempt()
