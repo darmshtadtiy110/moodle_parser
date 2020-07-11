@@ -3,46 +3,32 @@
 
 namespace General;
 
-use Parser\Parser;
+use General\Exceptions\CurlErrorException;
 
-use Interfaces\Parsable;
+//use \Exception;
 
-use Traits\ParserUtilities;
-
-abstract class Resource implements Parsable
+abstract class Resource
 {
-	use ParserUtilities;
-
 	/** @var int */
 	protected $id;
 
 	/** @var string */
 	protected $name;
 
-	public function loadFromDB()
+	protected $parser;
+
+	public function __construct($id, $name = "")
 	{
-		return false;
-	}
-
-	public function loadFromArray($param_array)
-	{
-		if(array_key_exists("link", $param_array))
+		if(is_int($id))
 		{
-			$param_array["id"] = Parser::parseExpressionFromLink("id", $param_array["link"]);
-			unset($param_array["link"]);
+			$this->id = $id;
 		}
+		//else throw new Exception("Resource id isn't integer");
 
-		$class_parameters = get_class_vars(get_class($this));
-
-		foreach ($param_array as $param => $value)
+		if($name != "")
 		{
-			if( array_key_exists($param, $class_parameters) )
-			{
-				$this->{$param} = $value;
-			}
+			$this->name = $name;
 		}
-
-		return $this;
 	}
 
 	/**
@@ -52,4 +38,55 @@ abstract class Resource implements Parsable
 	{
 		return $this->id;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function parser()
+	{
+		return $this->parser;
+	}
+
+	/** @deprecated  */
+	protected function setParser()
+	{
+		$resource_class = get_class($this);
+		$parser_class = "\\Parser\\".$resource_class."Parser";
+		$this->parser = new $parser_class();
+	}
+
+	protected function requestResourcePage()
+	{
+		$resource_type = Tools::get_object_class_name($this);
+
+		if( is_callable( "Properties::".$resource_type, true ) )
+		{
+			$link = Properties::$resource_type().$this->getId();
+
+			try {
+				$resource_request = new Request($link);
+				$this->parser()->setParsePage($resource_request->response());
+			}
+			catch (CurlErrorException $e) {
+				Signal::msg("Curl error in request for ".get_class()." ".$e->getMessage());
+			}
+		}
+	}
+
+	public function parse()
+	{
+		//$this->setParser();
+		$this->requestResourcePage();
+		$this->use_parser();
+	}
+
+	abstract protected function use_parser();
 }
