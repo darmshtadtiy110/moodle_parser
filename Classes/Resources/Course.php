@@ -12,10 +12,10 @@ class Course extends Resource
 
 	private $document_list = [];
 
-	public function __construct($id)
+	public function __construct($id, $name)
 	{
 		$this->parser = new CourseParser();
-		parent::__construct($id);
+		parent::__construct($id, $name);
 	}
 
 	/**
