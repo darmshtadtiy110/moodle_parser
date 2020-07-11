@@ -3,26 +3,12 @@
 
 namespace Resources;
 
+
 use General\Resource;
 use Parser\Resources\QuestionParser;
 
-use Interfaces\ParentResource;
-
-use Traits\ParentUtilities;
-
-class Question extends Resource implements ParentResource
+class Question extends Resource
 {
-	use ParentUtilities;
-
-	/** @var int */
-	protected $id;
-
-	/** @var int */
-	protected $number;
-
-	/** @var String */
-	protected $text;
-
 	protected $answer;
 
 	/** @var bool */
@@ -38,12 +24,10 @@ class Question extends Resource implements ParentResource
 
 	protected $saved = false;
 
-	/** @var QuestionParser */
-	protected $parser;
-
-	public function __construct($number)
+	public function __construct($id, $text)
 	{
-		$this->number = $number;
+		$this->parser = new QuestionParser();
+		parent::__construct($id, $text);
 	}
 
 	protected function use_parser()
@@ -52,7 +36,7 @@ class Question extends Resource implements ParentResource
 		$this->parser->identityQuestionBlock($this);
 
 		// 2. parse question text
-		$this->text = $this->parser->getQuestionText();
+		$this->name = $this->parser->getQuestionText();
 
 		// 3. parse variants
 		$this->variants = $this->parser->getVariants();
@@ -78,7 +62,7 @@ class Question extends Resource implements ParentResource
 	 */
 	public function getText()
 	{
-		return $this->text;
+		return $this->name;
 	}
 
 	/**
@@ -110,7 +94,7 @@ class Question extends Resource implements ParentResource
 	 */
 	public function getNumber()
 	{
-		return $this->number;
+		return $this->id;
 	}
 
 	/**
