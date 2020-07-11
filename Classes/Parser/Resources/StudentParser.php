@@ -7,10 +7,8 @@ namespace Parser\Resources;
 use Parser\Parser;
 use General\Signal;
 use Resources\Course;
-use Exception;
 use DiDom\Exceptions\InvalidSelectorException;
 
-// TODO add id parsing
 class StudentParser extends Parser
 {
 	/**
@@ -18,18 +16,7 @@ class StudentParser extends Parser
 	 */
 	public function getLoginResults()
 	{
-		$login_nodes = [];
-
-		try {
-			$login_nodes = $this->parse_page->find(".login");
-		}
-		catch (InvalidSelectorException $e) {
-			echo "Wrong selector ". $e->getMessage();
-		}
-
-		if(empty($login_nodes))
-			return true;
-
+		$login_nodes = $this->find(".login");
 		return $login_nodes[0]->text();
 	}
 
@@ -38,53 +25,38 @@ class StudentParser extends Parser
 	 */
 	public function getLoginError()
 	{
-		try {
-			$error_nodes = $this->parse_page->find("span.error");
-		}
-		catch (InvalidSelectorException $e) {}
-
-		if(empty($error_nodes))
-			return false;
-
+		$error_nodes = $this->find("span.error");
 		return $error_nodes[0]->text();
 	}
 
 
 	/**
 	 * @return string
-	 * @throws Exception
 	 */
 	public function getUserText()
 	{
-		try {
-			$user_text_nodes = $this->parse_page->find(".usertext");
-		}
-		catch (InvalidSelectorException $e) {
-			echo "Wrong selector ". $e->getMessage();
-		}
-
-		if(empty($user_text_nodes)) {
-			throw new Exception("Can't find usertext node");
-		}
-
+		$user_text_nodes = $this->find(".usertext");
 		return $user_text_nodes[0]->text();
 	}
 
 	/**
-	 * @throws Exception
+	 * @return int
+	 */
+	public function getUserId()
+	{
+		$user_profile_link = $this->find("a[data-title=profile,moodle]");
+		$link = $user_profile_link[0]->text();
+		return (int) self::parseExpressionFromLink("id", $link);
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getCoursesArray()
 	{
-		$course_boxes  = [];
 		$courses_array = [];
 
-		try {
-			$course_boxes = $this->parse_page->find("div.coursebox");
-		}
-		catch (InvalidSelectorException $e) {
-			Signal::msg("Wrong selector, or boxes not found on page ".$e->getMessage());
-		}
+		$course_boxes = $this->find("div.coursebox");
 
 		foreach ($course_boxes as $key => $course_box)
 		{
@@ -97,17 +69,11 @@ class StudentParser extends Parser
 			}
 			catch (InvalidSelectorException $e) { Signal::msg($e->getMessage()); }
 
-			if($course_name != "" && $course_link != "")
-			{
-				$course = new Course();
+			$course_id = self::parseExpressionFromLink("id", $course_link);
 
-				$course->loadFromArray([
-					"name" => $course_name,
-					"link" => $course_link
-				]);
+			$course = new Course($course_id, $course_name);
 
-				$courses_array[$course->getId()] = $course;
-			}
+			$courses_array[$course_id] = $course;
 		}
 
 		return $courses_array;
