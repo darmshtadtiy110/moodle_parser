@@ -17,7 +17,7 @@ class ProcessingAttempt extends Attempt
 	private $session_key;
 
 	/** @var int */
-	private $cmid;
+	private $quiz_id;
 
 	/** @var bool */
 	private $timer_exist = false;
@@ -27,21 +27,17 @@ class ProcessingAttempt extends Attempt
 
 	private $form_inputs = [];
 
-	/**
-	 * @param mixed $session_key
-	 */
-	public function setSessionKey($session_key)
+	public function __construct($id, $session_key, $quiz_id, $timer_exist)
 	{
 		$this->session_key = $session_key;
+		$this->quiz_id = $quiz_id;
+		$this->timer_exist = $timer_exist;
+
+		$this->parser = new ProcessingAttemptParser();
+
+		parent::__construct($id);
 	}
 
-	/**
-	 * @param mixed $cmid
-	 */
-	public function setCmid($cmid)
-	{
-		$this->cmid = $cmid;
-	}
 
 	/**
 	 * @param bool $timer_exist
@@ -67,11 +63,11 @@ class ProcessingAttempt extends Attempt
 		return $this->form_inputs;
 	}
 
-	protected function getParsablePage()
+	protected function requestResourcePage()
 	{
 		$start_attempt_request = Request::StartAttempt(
 			$this->session_key,
-			$this->cmid,
+			$this->quiz_id,
 			$this->timer_exist
 		);
 		$this->parser()->setParsePage($start_attempt_request->response());
@@ -118,7 +114,6 @@ class ProcessingAttempt extends Attempt
 		{
 			if($question->isCurrent())
 			{
-				$question->setParser();
 				$question->parser()->setParsePage($this->parser->getParsePage());
 				$question->parse();
 			}
