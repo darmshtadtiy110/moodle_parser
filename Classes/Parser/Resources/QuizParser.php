@@ -73,10 +73,10 @@ class QuizParser extends Parser
 			try {
 				$index  = (int) $attempt_tr->find("td.c0")[0]->text();
 
-				$name = $attempt_tr->find("td.c1")[0]->text();
+				$name = $attempt_tr->find("td.c1>span")[0]->text();
 
 				$grade  = $attempt_tr->find("td.c2");
-				$review = $attempt_tr->find("td.c4>a");
+				$review = $attempt_tr->find("td.c3>a");
 
 				if( empty($review) )
 				{
@@ -88,7 +88,7 @@ class QuizParser extends Parser
 				}
 				else {
 					$attempt_review_link = $review[0]->attr("href");
-					$id = Parser::parseExpressionFromLink("id", $attempt_review_link);
+					$id = Parser::parseExpressionFromLink("attempt", $attempt_review_link);
 					$grade = (int) $grade[0]->text();
 
 					$attempt_list[$id] = [
