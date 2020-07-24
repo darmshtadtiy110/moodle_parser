@@ -38,7 +38,7 @@ abstract class Parser
 
 	/**
 	 * @param $expression
-	 * @return bool|Element[]|DOMElement[]
+	 * @return Element[]|DOMElement[]
 	 */
 	public function find($expression)
 	{

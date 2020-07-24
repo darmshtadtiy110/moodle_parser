@@ -7,7 +7,6 @@ namespace General;
 use DiDom\Document;
 use FileSystem\Cookies;
 use Resources\Student;
-use General\Exceptions\CurlErrorException;
 
 class Request
 {
@@ -30,20 +29,21 @@ class Request
 	 * Request constructor.
 	 * @param $url
 	 * @param array $post_fields
-	 * @throws CurlErrorException
+	 * @param Cookies $cookies
 	 */
-	public function __construct($url, $post_fields = [])
+	public function __construct($url, $post_fields = [], Cookies $cookies = null)
 	{
 		$this->url = $url;
 		$this->post_fields = $post_fields;
-		$this->cookies = Student::getInstance()->cookies();
+
+		if( isset($cookies) )
+			$this->cookies = $cookies;
+		else
+			$this->cookies = Student::getInstance()->cookies();
 
 		$this->make();
 	}
 
-	/**
-	 * @throws CurlErrorException
-	 */
 	private function make()
 	{
 		$this->channel = curl_init();
@@ -66,8 +66,10 @@ class Request
 
 		$html = curl_exec($this->channel);
 
-		if(curl_errno($this->channel)) throw new CurlErrorException (curl_error($this->channel));
-
+		//TODO Make Logging function for errors
+		/**
+		 * if(curl_errno($this->channel))
+		*/
 		curl_close($this->channel);
 
 		$this->response = new Document($html);
@@ -89,23 +91,19 @@ class Request
 	/**
 	 * @param $login
 	 * @param $password
+	 * @param Cookies $cookies
 	 * @return bool|Request
 	 */
-	public static function Login($login, $password)
+	public static function Login($login, $password, Cookies $cookies)
 	{
-		$request = false;
-		try {
-			$request = new Request(
-				Properties::login(),
-				[
-					"username" => $login,
-					"password" => $password
-				]
-			);
-		}
-		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
-
-		return $request;
+		return new Request(
+			Properties::login(),
+			[
+				"username" => $login,
+				"password" => $password
+			],
+			$cookies
+		);
 	}
 
 	/**
@@ -125,35 +123,28 @@ class Request
 			$post_fields["submitbutton"] = "Почати спробу";
 		}
 
-		$request = false;
-
-		try {
-			$request = new Request(
-				Properties::start_attempt(),
-				$post_fields
-			);
-		}
-		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
-
-		return $request;
+		return new Request(
+			Properties::start_attempt(),
+			$post_fields
+		);
 	}
 
 	/**
 	 * @param array $form_fields
-	 * @return bool|Request
+	 * @return Request
 	 */
 	public static function ProcessAttempt(array $form_fields)
 	{
-		$request = false;
+		return new Request(
+			Properties::process_attempt(),
+			$form_fields
+		);
+	}
 
-		try {
-			$request = new Request(
-				Properties::process_attempt(),
-				$form_fields
-			);
-		}
-		catch (CurlErrorException $e) { Signal::msg($e->getMessage()); }
-
-		return $request;
+	public static function FinishAttempt($attempt_id)
+	{
+		return new Request(
+			Properties::summary_form().$attempt_id
+		);
 	}
 }

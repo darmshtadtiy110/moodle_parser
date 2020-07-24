@@ -3,9 +3,11 @@
 
 namespace Resources;
 
-use General\Resource;
-use Parser\Resources\QuizParser;
 
+use General\Request;
+use General\Resource;
+use Parser\Resources\ProcessingAttemptParser;
+use Parser\Resources\QuizParser;
 
 class Quiz extends Resource
 {
@@ -16,10 +18,19 @@ class Quiz extends Resource
 	/** @var bool */
 	private $timer_exist;
 
-	public function __construct($id)
-	{
+	public function __construct(
+		$id,
+		$name,
+		$attempt_list,
+		$session_key,
+		$timer_exist
+	) {
+		$this->attempt_list = $attempt_list;
+		$this->session_key = $session_key;
+		$this->timer_exist = $timer_exist;
+
 		$this->parser = new QuizParser();
-		parent::__construct($id);
+		parent::__construct($id, $name);
 	}
 
 	public function getAttempt($id)
@@ -46,9 +57,6 @@ class Quiz extends Resource
 
 	protected function use_parser()
 	{
-		$this->session_key = $this->parser->getSessionKey();
-		$this->timer_exist = $this->parser->getTimer();
-		$this->attempt_list = $this->parser->getAttemptList();
 	}
 
 	public function getBestAttempt()
@@ -61,15 +69,21 @@ class Quiz extends Resource
 	 */
 	public function startProcessingAttempt()
 	{
-		if(
-			array_key_exists(0, $this->attempt_list) &&
-			$this->attempt_list[0] instanceof ProcessingAttempt
-		){
-			$this->attempt_list[0]->parse();
-			return $this->attempt_list[0];
-		}
-		else {
-			return Attempt::Start($this);
-		}
+		$start_attempt_request = Request::StartAttempt(
+			$this->session_key,
+			$this->id,
+			$this->timer_exist
+		);
+		$attempt_parser = new ProcessingAttemptParser();
+
+		$attempt_parser->setParsePage($start_attempt_request->response());
+
+		return new ProcessingAttempt(
+			$attempt_parser->getAttemptId(),
+			$this->getSessionKey(),
+			$this->getId(),
+			$this->getTimerExist(),
+			$attempt_parser
+		);
 	}
 }

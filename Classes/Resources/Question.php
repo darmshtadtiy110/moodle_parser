@@ -5,7 +5,6 @@ namespace Resources;
 
 
 use General\Resource;
-use Parser\Resources\QuestionParser;
 
 class Question extends Resource
 {
@@ -14,9 +13,13 @@ class Question extends Resource
 	/** @var bool */
 	protected $state;
 
+	/** @var Variant[] */
 	protected $variants = [];
 
-	/** @var integer */
+	/** @var int */
+	protected $selected_variant;
+
+	/** @var int */
 	protected $grade;
 
 	/** @var bool */
@@ -24,29 +27,11 @@ class Question extends Resource
 
 	protected $saved = false;
 
-	public function __construct($id, $text)
+	public function __construct($id, $text, $variants)
 	{
-		$this->parser = new QuestionParser();
+		$this->variants = $variants;
+
 		parent::__construct($id, $text);
-	}
-
-	protected function use_parser()
-	{
-		// 1. identity question block
-		$this->parser->identityQuestionBlock($this);
-
-		// 2. parse question text
-		$this->name = $this->parser->getQuestionText();
-
-		// 3. parse variants
-		$this->variants = $this->parser->getVariants();
-
-	}
-
-	public function parse()
-	{
-		$this->use_parser();
-		$this->parser()->purgePage();
 	}
 
 	/**
@@ -129,21 +114,9 @@ class Question extends Resource
 		$this->saved = $saved;
 	}
 
-	/**
-	 * @param array $variant
-	 */
-	public function setVariant(array $variant)
+	public function selectVariant(Variant $variant)
 	{
-		if(
-			array_key_exists('value', $variant) &&
-			array_key_exists('input_name', $variant) &&
-			array_key_exists('input_value', $variant)
-		) {
-			$this->variants[] = [
-				"value" => $variant["value"],
-				"input_name" => $variant["input_name"],
-				"input_value" => $variant["input_value"]
-			];
-		}
+		$this->selected_variant = $variant->getId();
+		$this->setSaved(true);
 	}
 }

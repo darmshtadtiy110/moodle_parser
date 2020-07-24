@@ -5,13 +5,22 @@ namespace Resources;
 
 
 use General\Request;
-use General\AttemptProcessor;
+
 use Parser\Resources\ProcessingAttemptParser;
+use Parser\Resources\QuestionParser;
+
+use AttemptProcessor\Processor;
 
 class ProcessingAttempt extends Attempt
 {
 	/** @var ProcessingAttemptParser */
 	protected $parser;
+
+	/** @var QuestionParser */
+	protected $question_parser;
+
+	/** @var Processor */
+	protected $processor;
 
 	/** @var string */
 	private $session_key;
@@ -27,24 +36,30 @@ class ProcessingAttempt extends Attempt
 
 	private $form_inputs = [];
 
-	public function __construct($id, $session_key, $quiz_id, $timer_exist)
+	public function __construct(
+		$id,
+		$session_key,
+		$quiz_id,
+		$timer_exist,
+		ProcessingAttemptParser $parser
+	)
 	{
 		$this->session_key = $session_key;
 		$this->quiz_id = $quiz_id;
 		$this->timer_exist = $timer_exist;
 
-		$this->parser = new ProcessingAttemptParser();
+		$this->parser = $parser;
+
+		$this->question_parser = new QuestionParser();
 
 		parent::__construct($id);
+
+		$this->use_parser();
 	}
 
-
-	/**
-	 * @param bool $timer_exist
-	 */
-	public function setTimerExist($timer_exist)
+	public function setProcessor(Processor $processor)
 	{
-		$this->timer_exist = $timer_exist;
+		$this->processor = $processor;
 	}
 
 	/**
@@ -63,61 +78,18 @@ class ProcessingAttempt extends Attempt
 		return $this->form_inputs;
 	}
 
-	protected function requestResourcePage()
-	{
-		$start_attempt_request = Request::StartAttempt(
-			$this->session_key,
-			$this->quiz_id,
-			$this->timer_exist
-		);
-		$this->parser()->setParsePage($start_attempt_request->response());
-	}
-
 	protected function use_parser()
 	{
-		// 1. get list status of all questions
-		// 2. parse those of which on current page
-		// 3. parse hidden inputs on page
+		$this->question_parser->setParsePage($this->parser->getParsePage());
+		$current_questions_array = $this->question_parser->parseQuestions();
 
-		$this->updateQuestionList();
-		$this->parseCurrentQuestions();
-
-		$this->form_inputs = $this->parser->parseInputs();
-	}
-
-	private function updateQuestionList()
-	{
-		$question_status_array = $this->parser->getQuestionsStatus();
-
-		foreach ($question_status_array as $number => $question_array)
+		foreach ($current_questions_array as $question)
 		{
-			$question = $this->getQuestion($number);
-
-			if(!$question)
-			{
-				$new_question = new Question($number);
-				$new_question->setSaved($question_array["saved"]);
-				$new_question->setCurrent($question_array["current"]);
-
-				$this->setQuestion($new_question);
-			}
-			else {
-				$question->setSaved($question_array["saved"]);
-				$question->setCurrent($question_array["current"]);
-			}
+			$question->setCurrent(true);
+			$this->setQuestion($question);
 		}
-	}
 
-	private function parseCurrentQuestions()
-	{
-		foreach ($this->question_list as $question)
-		{
-			if($question->isCurrent())
-			{
-				$question->parser()->setParsePage($this->parser->getParsePage());
-				$question->parse();
-			}
-		}
+		$this->form_inputs = $this->parser->parseForm();
 	}
 
 	/**
@@ -136,10 +108,12 @@ class ProcessingAttempt extends Attempt
 	 */
 	public function setQuestion(Question $question)
 	{
-		if(!array_key_exists($question->getNumber(), $this->question_list))
-			$this->question_list[$question->getNumber()] = $question;
+		$this->question_list[$question->getNumber()] = $question;
 	}
 
+	/**
+	 * @return Question[]
+	 */
 	public function getCurrentQuestions()
 	{
 		$current = [];
@@ -152,22 +126,54 @@ class ProcessingAttempt extends Attempt
 
 	public function process()
 	{
-		// TODO Replace processors to questions
-		// TODO Processor must work with separate questions
-		// TODO process questions by them quantity on attempt
-		/**
-		 * while () { $this->processor() }
-		 * in processor() realize following code
-		 */
+		$current = $this->getCurrentQuestions();
 
-		// TODO Select processor
-		$selected_answer = AttemptProcessor::Random($this);
+		foreach ($current as $question)
+		{
+			$selected_variant = $this->processor->choiceVariant($question);
 
-		$post_fields = $this->getFormInputs();
-		$post_fields[$selected_answer["input_name"]] = $selected_answer["input_value"];
+			$question->selectVariant($selected_variant);
+			$question->setCurrent(false);
 
-		$next_page_request = Request::ProcessAttempt($post_fields);
-		$this->parser->setParsePage($next_page_request->response());
+			$this->setQuestion($question);
+			$this->form_inputs[$selected_variant->getInputName()] = $selected_variant->getInputValue();
+		}
+
+		$this->processPage();
 		$this->use_parser();
+
+	}
+
+	private function processPage()
+	{
+		$next_page_request = Request::ProcessAttempt($this->form_inputs);
+		$this->parser->setParsePage($next_page_request->response());
+	}
+
+	public function processAllQuestions()
+	{
+		do {
+			$status = $this->parser->getQuestionsStatus();
+
+			if($status["saved"] == $status["total"]) break;
+
+			var_dump($status);
+
+			$this->process();
+
+		}
+		while ($status["saved"] < $status["total"]-1);
+
+		$this->finish();
+	}
+
+	public function finish()
+	{
+		$summary_page_request = Request::FinishAttempt($this->getId());
+		$this->parser->setParsePage($summary_page_request->response());
+
+		$this->form_inputs = $this->parser->parseForm("finish_attempt");
+
+		$this->processPage();
 	}
 }

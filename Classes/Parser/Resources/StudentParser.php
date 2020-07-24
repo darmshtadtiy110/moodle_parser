@@ -6,18 +6,19 @@ namespace Parser\Resources;
 
 use Parser\Parser;
 use General\Signal;
-use Resources\Course;
 use DiDom\Exceptions\InvalidSelectorException;
 
 class StudentParser extends Parser
 {
 	/**
-	 * @return bool|string
+	 * @return string|bool
 	 */
 	public function getLoginResults()
 	{
-		$login_nodes = $this->find(".login");
-		return $login_nodes[0]->text();
+		$login_info_nodes = $this->find(".login");
+
+		if ( empty($login_info_nodes) ) return true;
+		else return $login_info_nodes[0]->text();
 	}
 
 	/**
@@ -70,10 +71,11 @@ class StudentParser extends Parser
 			catch (InvalidSelectorException $e) { Signal::msg($e->getMessage()); }
 
 			$course_id = self::parseExpressionFromLink("id", $course_link);
-
-			$course = new Course($course_id, $course_name);
-
-			$courses_array[$course_id] = $course;
+			
+			$courses_array[$course_id] = [
+				"id" => $course_id,
+				"name" => $course_name
+			];
 		}
 
 		return $courses_array;

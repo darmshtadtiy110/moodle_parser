@@ -4,7 +4,6 @@
 namespace Resources;
 
 
-use General\Exceptions\CurlErrorException;
 use General\Properties;
 use General\Signal;
 use General\Request;
@@ -30,9 +29,19 @@ class Student extends Resource
 	/** @var Course[] */
 	private $course_list = [];
 
-	public function __construct($id, $name = "", $course_list = [])
+	public function __construct(
+		$id,
+		$name,
+		Passport $passport,
+		Cookies $cookies,
+		$course_list = []
+	)
 	{
+		$this->passport = $passport;
+		$this->cookies = $cookies;
+
 		$this->course_list = $course_list;
+
 		$this->parser = new StudentParser();
 		parent::__construct($id, $name);
 	}
@@ -57,20 +66,23 @@ class Student extends Resource
 	{
 		$parser = new StudentParser();
 
+		$cookies = new Cookies($passport->login() . ".txt");
+
 		$login_request = Request::Login(
 			$passport->login(),
-			$passport->password()
+			$passport->password(),
+			$cookies
 		);
 
 		$parser->setParsePage($login_request->response());
 
-		if($parser->getLoginResults() === true)
+		if($parser->getLoginResults())
 		{
 			$name = $parser->getUserText();
 			$course_list = $parser->getCoursesArray();
 			$id = $parser->getUserId();
 
-			return new Student($id, $name, $course_list);
+			return new Student($id, $name, $passport, $cookies, $course_list);
 		}
 		else { Signal::msg( $parser->getLoginError()); };
 		return false;
@@ -86,15 +98,11 @@ class Student extends Resource
 
 	/**
 	 * @param $id
-	 * @return bool|Course
+	 * @return Course
 	 */
 	public function getCourse($id)
 	{
-		if(array_key_exists($id, $this->course_list))
-		{
-			return $this->course_list[$id];
-		}
-		return false;
+		return $this->course_list[$id];
 	}
 
 	/**
@@ -110,25 +118,14 @@ class Student extends Resource
 	 */
 	public function cookies()
 	{
-		if (empty($this->cookies))
-			$this->cookies = new Cookies($this->passport()->login() . ".txt");
-
 		return $this->cookies;
 	}
 
 	protected function getParsablePage()
 	{
-		try {
-			$user_profile_request = new Request(
-				Properties::Profile() . $this->id
-			);
-			$this->parser()->setParsePage($user_profile_request->response());
-		}
-		catch (CurlErrorException $e) {}
-	}
-
-	protected function use_parser()
-	{
-		//TODO
+		$user_profile_request = new Request(
+			Properties::Profile() . $this->id
+		);
+		$this->parser()->setParsePage($user_profile_request->response());
 	}
 }

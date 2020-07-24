@@ -3,9 +3,6 @@
 
 namespace General;
 
-use General\Exceptions\CurlErrorException;
-
-//use \Exception;
 
 abstract class Resource
 {
@@ -23,12 +20,14 @@ abstract class Resource
 		{
 			$this->id = $id;
 		}
-		//else throw new Exception("Resource id isn't integer");
+		else return false;
 
 		if($name != "")
 		{
 			$this->name = $name;
 		}
+
+		return $this;
 	}
 
 	/**
@@ -55,14 +54,6 @@ abstract class Resource
 		return $this->parser;
 	}
 
-	/** @deprecated  */
-	protected function setParser()
-	{
-		$resource_class = get_class($this);
-		$parser_class = "\\Parser\\".$resource_class."Parser";
-		$this->parser = new $parser_class();
-	}
-
 	protected function requestResourcePage()
 	{
 		$resource_type = Tools::get_object_class_name($this);
@@ -71,22 +62,19 @@ abstract class Resource
 		{
 			$link = Properties::$resource_type().$this->getId();
 
-			try {
-				$resource_request = new Request($link);
-				$this->parser()->setParsePage($resource_request->response());
-			}
-			catch (CurlErrorException $e) {
-				Signal::msg("Curl error in request for ".get_class()." ".$e->getMessage());
-			}
+			$resource_request = new Request($link);
+			$this->parser()->setParsePage($resource_request->response());
+
 		}
 	}
 
 	public function parse()
 	{
-		//$this->setParser();
 		$this->requestResourcePage();
 		$this->use_parser();
+
+		return $this;
 	}
 
-	abstract protected function use_parser();
+	protected function use_parser() {}
 }

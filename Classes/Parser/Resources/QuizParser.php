@@ -3,16 +3,21 @@
 
 namespace Parser\Resources;
 
-
+use Resources\Quiz;
+use General\Properties;
+use General\Request;
 use Parser\Parser;
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
-use Resources\FinishedAttempt;
-use Resources\ProcessingAttempt;
 
 class QuizParser extends Parser
 {
-	public  function getSessionKey()
+	public function getQuizName()
+	{
+		return $this->find("h2")[0]->text();
+	}
+
+	public function getSessionKey()
 	{
 		$session = "";
 
@@ -58,15 +63,14 @@ class QuizParser extends Parser
 		return $timer_exist;
 	}
 
-	public function  getAttemptList()
+	public function getAttemptList()
 	{
 		$attempt_list = [];
+		$attempt_table = $this->find("table.generaltable.quizattemptsummary>tbody>tr");
 
-		try {
-			$attempt_table = $this->parse_page->find("table.generaltable.quizattemptsummary>tbody>tr");
-
-			foreach ($attempt_table as $attempt_tr)
-			{
+		foreach ($attempt_table as $attempt_tr)
+		{
+			try {
 				$index  = (int) $attempt_tr->find("td.c0")[0]->text();
 
 				$name = $attempt_tr->find("td.c1")[0]->text();
@@ -74,41 +78,51 @@ class QuizParser extends Parser
 				$grade  = $attempt_tr->find("td.c2");
 				$review = $attempt_tr->find("td.c4>a");
 
-				if( !empty($review) )
+				if( empty($review) )
 				{
-					$attempt_review_link = $review[0]->attr("href");
-					$id = Parser::parseExpressionFromLink("id", $attempt_review_link);
-				}
-				else $id = 0;
-
-				$grade = (int) $grade[0]->text();
-
-				if( $grade > 0 ):
-					$finished = true;
-				else:
-					$finished = false;
-				endif;
-
-				if( $finished == true )
-				{
-					$attempt = new FinishedAttempt($id, $grade, $name);
+					$attempt_list["processing"] = [
+						"index" => $index,
+						"name" => $name,
+						"state" => "processing"
+					];
 				}
 				else {
-					$attempt = new ProcessingAttempt(
-						$id,
-						$this->getSessionKey(),
-						$this->getQuizId(),
-						$this->getTimer()
-					);
+					$attempt_review_link = $review[0]->attr("href");
+					$id = Parser::parseExpressionFromLink("id", $attempt_review_link);
+					$grade = (int) $grade[0]->text();
+
+					$attempt_list[$id] = [
+						"index" => $index,
+						"name" => $name,
+						"state" => "finished",
+						"grade" => $grade
+					];
 				}
-
-				$attempt_list[$index] = $attempt;
 			}
+			catch (InvalidSelectorException $e) { echo "loadAttemptList exception ".$e->getMessage(); }
 		}
-		catch (InvalidSelectorException $e) {
-			echo "loadAttemptList exception ".$e->getMessage();
-		}
-
 		return $attempt_list;
+	}
+
+	/**
+	 * @param $id
+	 * @return Quiz
+	 */
+	public static function GetById($id)
+	{
+		$link = Properties::Quiz().$id;
+		$parser = new QuizParser();
+
+		$resource_request = new Request($link);
+
+		$parser->setParsePage($resource_request->response());
+
+		return new Quiz(
+			$id,
+			$parser->getQuizName(),
+			$parser->getAttemptList(),
+			$parser->getSessionKey(),
+			$parser->getTimer()
+		);
 	}
 }
