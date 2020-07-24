@@ -3,12 +3,16 @@
 
 namespace Parser\Resources;
 
+use General\Request;
 use Parser\Parser;
-use DiDom\Exceptions\InvalidSelectorException;
 use General\Signal;
+use Resources\FinishedAttempt;
+use DiDom\Exceptions\InvalidSelectorException;
+use Exception;
 
 class FinishedAttemptParser extends Parser
 {
+
 	/**
 	 * @deprecated
 	 * This function parsed finished attempt page
@@ -47,5 +51,60 @@ class FinishedAttemptParser extends Parser
 		}
 
 		return $question_list;
+	}
+
+	public function findGeneralTable()
+	{
+		return $this->find("table.generaltable")[0];
+	}
+
+	public function getGrade()
+	{
+		$general_table = $this->findGeneralTable();
+
+		try {
+			$rows = $general_table->find("tbody>tr");
+			$grade = (int) $rows[4]->find("td>b")[0]->text();
+			return $grade;
+		}
+		catch (InvalidSelectorException $e) {}
+		return false;
+	}
+
+	public function getName()
+	{
+		$general_table = $this->findGeneralTable();
+
+		try {
+			$rows = $general_table->find("tbody>tr");
+			$name = $rows[1]->find("td")[0]->text();
+			return $name;
+		}
+		catch (InvalidSelectorException $e) {}
+		return false;
+	}
+
+	public static function GetById($id)
+	{
+		$attempt_review_request = Request::AttemptReview($id);
+
+		$attempt_parser = new FinishedAttemptParser();
+		$questions_parser = new QuestionParser();
+
+		$attempt_parser->setParsePage($attempt_review_request->response());
+		$questions_parser->setParsePage($attempt_review_request->response());
+
+		$attempt = false;
+		try {
+			$attempt = new FinishedAttempt(
+				$id,
+				$attempt_parser->getGrade(),
+				$attempt_parser->getName(),
+				$questions_parser->parseQuestions()
+			);
+		}
+		catch (Exception $e) { Signal::msg($e->getMessage()); }
+
+		return $attempt;
 	}
 }

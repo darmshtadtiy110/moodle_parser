@@ -4,6 +4,8 @@
 namespace Resources;
 
 
+use Exception;
+
 abstract class Variant
 {
 	/** @var int */
@@ -12,13 +14,27 @@ abstract class Variant
 	/** @var mixed */
 	protected $value;
 
+	/** @var bool */
+	protected $checked;
+
 	protected $input_name;
 
 	protected $input_value;
 
-	public function __construct($id, $input_name, $input_value)
+	/**
+	 * Variant constructor.
+	 * @param $id
+	 * @param $checked
+	 * @param $input_name
+	 * @param $input_value
+	 * @throws Exception
+	 */
+	public function __construct($id, $checked, $input_name, $input_value)
 	{
+		if( !is_bool($checked) ) throw new Exception("Checked param isn't bool");
+
 		$this->id = (int) $id;
+		$this->checked = $checked;
 		$this->input_name = $input_name;
 		$this->input_value = $input_value;
 	}
@@ -45,5 +61,13 @@ abstract class Variant
 	public function getInputValue()
 	{
 		return $this->input_value;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isChecked()
+	{
+		return $this->checked;
 	}
 }

@@ -4,6 +4,8 @@
 namespace General;
 
 
+use \Exception;
+
 abstract class Resource
 {
 	/** @var int */
@@ -14,20 +16,24 @@ abstract class Resource
 
 	protected $parser;
 
+	/**
+	 * Resource constructor.
+	 * @param $id
+	 * @param string $name
+	 * @throws Exception
+	 */
 	public function __construct($id, $name = "")
 	{
 		if(is_int($id))
 		{
 			$this->id = $id;
 		}
-		else return false;
+		else throw new Exception("Resource id is wrong! ( ".$id." )");
 
 		if($name != "")
 		{
 			$this->name = $name;
 		}
-
-		return $this;
 	}
 
 	/**

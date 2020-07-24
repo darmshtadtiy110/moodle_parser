@@ -4,17 +4,34 @@
 namespace Resources;
 
 
-use Parser\Resources\FinishedAttemptParser;
+use Exception;
 
 class FinishedAttempt extends Attempt
 {
 	/** @var int */
 	private $grade;
 
-	public function __construct($id, $grade, $name = "")
+	/** @var Question[] */
+	private $questions = [];
+
+	/**
+	 * FinishedAttempt constructor.
+	 * @param $id
+	 * @param $grade
+	 * @param $name
+	 * @param array $questions
+	 * @throws Exception
+	 */
+	public function __construct($id, $grade, $name, array $questions)
 	{
+		if($name == "") throw new Exception("Attempt name is wrong! ( ".$name." )");
+
+		if(!is_int($grade)) throw new Exception(" Attemp grade is wrong! ( ".$grade." )");
+		if(empty($questions)) throw new Exception("Questions array is empty!");
+
 		$this->grade = $grade;
-		$this->parser = new FinishedAttemptParser();
+		$this->questions = $questions;
+
 		parent::__construct($id, $name);
 	}
 
@@ -24,11 +41,6 @@ class FinishedAttempt extends Attempt
 	public function getGrade()
 	{
 		return $this->grade;
-	}
-
-	protected function use_parser()
-	{
-		// TODO: Implement use_parser() method.
 	}
 
 }

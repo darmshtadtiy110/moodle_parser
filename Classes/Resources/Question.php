@@ -5,13 +5,12 @@ namespace Resources;
 
 
 use General\Resource;
+use Exception;
 
 class Question extends Resource
 {
-	protected $answer;
-
 	/** @var bool */
-	protected $state;
+	protected $correct;
 
 	/** @var Variant[] */
 	protected $variants = [];
@@ -27,9 +26,17 @@ class Question extends Resource
 
 	protected $saved = false;
 
-	public function __construct($id, $text, $variants)
+	public function __construct($id, $text, $variants, $correct)
 	{
+		if(!is_bool($correct)) throw new Exception("Correct arg isn't bool");
+
 		$this->variants = $variants;
+		$this->correct = $correct;
+
+		foreach($this->variants as $variant)
+		{
+			if($variant->isChecked()) $this->selected_variant = $variant->getId();
+		}
 
 		parent::__construct($id, $text);
 	}
@@ -51,19 +58,11 @@ class Question extends Resource
 	}
 
 	/**
-	 * @return String
-	 */
-	public function getAnswer()
-	{
-		return $this->answer;
-	}
-
-	/**
 	 * @return bool
 	 */
-	public function getState()
+	public function isCorrect()
 	{
-		return $this->state;
+		return $this->correct;
 	}
 
 	/**

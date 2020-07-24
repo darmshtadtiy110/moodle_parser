@@ -7,10 +7,12 @@ use Resources\Variant;
 
 class TextVariant extends Variant
 {
-	public function __construct($id, $text, $input_name, $input_value)
+	public function __construct($id, $text, $checked, $input_name, $input_value)
 	{
+		if( !is_string($text) && $text == "") return;
+
 		$this->value = $text;
-		parent::__construct($id, $input_name, $input_value);
+		parent::__construct($id, $checked, $input_name, $input_value);
 	}
 
 	/**

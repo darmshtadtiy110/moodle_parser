@@ -8,8 +8,10 @@ use DiDom\Element;
 use General\Signal;
 use Parser\Parser;
 use Resources\Question;
-use DiDom\Exceptions\InvalidSelectorException;
 use Resources\Variants\TextVariant;
+
+use DiDom\Exceptions\InvalidSelectorException;
+use Exception;
 
 class QuestionParser extends Parser
 {
@@ -21,7 +23,7 @@ class QuestionParser extends Parser
 		$this->question_block = $block;
 	}
 
-	public function getQuestionNumber()
+	public function getNumber()
 	{
 		$number = false;
 		try {
@@ -31,7 +33,7 @@ class QuestionParser extends Parser
 		return $number;
 	}
 
-	public function getQuestionText()
+	public function getText()
 	{
 		$text = "";
 		try {
@@ -40,6 +42,18 @@ class QuestionParser extends Parser
 		catch (InvalidSelectorException $e) {}
 
 		return $text;
+	}
+
+	public function getCorrect()
+	{
+		$correct = false;
+		try {
+			$correct = $this->question_block->find("div.info>div.state")[0]->text();
+		}
+		catch (InvalidSelectorException $e) { Signal::msg($e->getMessage()); }
+
+		$correct = ($correct == "Правильно") ? true : false;
+		return $correct;
 	}
 
 
@@ -60,24 +74,32 @@ class QuestionParser extends Parser
 				{
 
 				}*/
+				$answer_input_node = $node->find("input")[0];
 
-				$answer_input_node = $node->find("input");
-				$answer_input_name = $answer_input_node[0]->attr("name");
-				$answer_input_value = $answer_input_node[0]->attr("value");
+				$answer_input_name = $answer_input_node->attr("name");
+				$answer_input_value = $answer_input_node->attr("value");
 
-				switch ($var_type)
-				{
-					case "text":
-						$variants[$key] = new TextVariant(
-							$key,
-							substr($variant_text, 3),
-							$answer_input_name,
-							$answer_input_value
-						);
-						continue;
-					case "pic":
-						continue;
+				$input_is_checked = $answer_input_node->attr("checked");
+				$input_is_checked = ($input_is_checked == "checked") ? true : false;
+
+				try {
+					switch ($var_type)
+					{
+						case "text":
+							$variants[$key] = new TextVariant(
+								$key,
+								substr($variant_text, 3),
+								$input_is_checked,
+								$answer_input_name,
+								$answer_input_value
+							);
+							continue;
+						case "pic":
+							continue;
+					}
 				}
+				catch (Exception $e) { Signal::msg($e->getMessage()); }
+
 			}
 		}
 		catch (InvalidSelectorException $e) { Signal::msg("IdentQuestion error: ".$e->getMessage()); }
@@ -96,12 +118,17 @@ class QuestionParser extends Parser
 		foreach ($question_blocks as $key => $block)
 		{
 			$this->setQuestionBlock($block);
+			$num = $this->getNumber();
 
-			$text = $this->getQuestionText();
-			$num = $this->getQuestionNumber();
-			$variant_array = $this->getVariants();
-
-			$question_array[$num] = new Question($num, $text, $variant_array);
+			try {
+				$question_array[$num] = new Question(
+					$num,
+					$this->getText(),
+					$this->getVariants(),
+					$this->getCorrect()
+				);
+			}
+			catch (Exception $e) { Signal::msg($e->getMessage()); }
 		}
 
 		return $question_array;

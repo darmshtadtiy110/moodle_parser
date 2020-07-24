@@ -147,4 +147,11 @@ class Request
 			Properties::summary_form().$attempt_id
 		);
 	}
+
+	public static function AttemptReview($attempt_id)
+	{
+		return new Request(
+			Properties::attempt_review().$attempt_id
+		);
+	}
 }
