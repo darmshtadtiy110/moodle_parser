@@ -57,9 +57,11 @@ abstract class Parser
 	public static function parseExpressionFromLink($exp, $link)
 	{
 		$link_array = parse_url($link);
-		parse_str($link_array["query"], $link_query);
-
-		if(isset($link_query[$exp])) return $link_query[$exp];
+		if(array_key_exists("query", $link_array))
+		{
+			parse_str($link_array["query"], $link_query);
+			if(array_key_exists($exp, $link_query) ) return $link_query[$exp];
+		}
 		return false;
 	}
 }

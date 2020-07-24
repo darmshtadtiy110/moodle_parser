@@ -22,6 +22,8 @@ class Properties
 
 	private static $processing_summary_form = "/mod/quiz/summary.php?attempt=";
 
+	private static $attempt_review = "/mod/quiz/review.php?attempt=";
+
 	public static function login()
 	{
 		return self::$target_url.self::$login_url;
@@ -55,5 +57,10 @@ class Properties
 	public static function Quiz()
 	{
 		return self::$target_url.self::$quiz;
+	}
+
+	public static function attempt_review()
+	{
+		return self::$target_url.self::$attempt_review;
 	}
 }

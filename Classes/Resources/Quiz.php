@@ -40,9 +40,9 @@ class Quiz extends Resource
 		return false;
 	}
 
-	public function setAttempt(Attempt $attempt)
+	public function getAttemptList()
 	{
-		$this->attempt_list[$attempt->getId()] = $attempt;
+		return $this->attempt_list;
 	}
 
 	public function getTimerExist()
