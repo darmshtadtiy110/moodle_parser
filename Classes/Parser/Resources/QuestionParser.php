@@ -62,6 +62,8 @@ class QuestionParser extends Parser
 		$variants = [];
 
 		try {
+			$correct_answer = $this->question_block->find("div.rightanswer");
+
 			$variant_nodes = $this->question_block->find("div.answer>div");
 
 			foreach ($variant_nodes as $key => $node)
@@ -86,7 +88,7 @@ class QuestionParser extends Parser
 					switch ($var_type)
 					{
 						case "text":
-							$variants[$key] = new TextVariant(
+							$variant = new TextVariant(
 								$key,
 								substr($variant_text, 3),
 								$input_is_checked,
@@ -100,6 +102,15 @@ class QuestionParser extends Parser
 				}
 				catch (Exception $e) { Signal::msg($e->getMessage()); }
 
+				if(!empty($correct_answer))
+				{
+					$correct_answer_text = str_replace("Правильна відповідь: ", "", $correct_answer[0]->text());
+
+					if($variant->getValue() == $correct_answer_text)
+						$variant->setIsCorrect(true);
+				}
+
+				$variants[] = $variant;
 			}
 		}
 		catch (InvalidSelectorException $e) { Signal::msg("IdentQuestion error: ".$e->getMessage()); }

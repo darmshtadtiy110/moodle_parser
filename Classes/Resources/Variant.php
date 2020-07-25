@@ -17,6 +17,8 @@ abstract class Variant
 	/** @var bool */
 	protected $checked;
 
+	protected $is_correct;
+
 	protected $input_name;
 
 	protected $input_value;
@@ -50,6 +52,14 @@ abstract class Variant
 	/**
 	 * @return mixed
 	 */
+	public function getValue()
+	{
+		return $this->value;
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function getInputName()
 	{
 		return $this->input_name;
@@ -69,5 +79,19 @@ abstract class Variant
 	public function isChecked()
 	{
 		return $this->checked;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function isCorrect()
+	{
+		return $this->is_correct;
+	}
+
+	public function setIsCorrect($correct)
+	{
+		if(is_bool($correct))
+			$this->is_correct = $correct;
 	}
 }

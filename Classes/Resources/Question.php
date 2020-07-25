@@ -10,7 +10,7 @@ use Exception;
 class Question extends Resource
 {
 	/** @var bool */
-	protected $correct;
+	protected $correct = false;
 
 	/** @var Variant[] */
 	protected $variants = [];
@@ -66,11 +66,27 @@ class Question extends Resource
 	}
 
 	/**
-	 * @return array
+	 * @return Variant
+	 */
+	public function getSelectedVariant()
+	{
+		return $this->variants[$this->selected_variant];
+	}
+
+	/**
+	 * @return Variant[]
 	 */
 	public function getVariants()
 	{
 		return $this->variants;
+	}
+
+	/**
+	 * @param Variant[] $variants
+	 */
+	public function setVariants($variants)
+	{
+		$this->variants = $variants;
 	}
 
 	/**

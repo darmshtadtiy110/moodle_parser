@@ -43,4 +43,9 @@ class FinishedAttempt extends Attempt
 		return $this->grade;
 	}
 
+	public function getQuestions()
+	{
+		return $this->questions;
+	}
+
 }

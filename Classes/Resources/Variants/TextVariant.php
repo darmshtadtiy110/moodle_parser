@@ -14,12 +14,4 @@ class TextVariant extends Variant
 		$this->value = $text;
 		parent::__construct($id, $checked, $input_name, $input_value);
 	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getValue()
-	{
-		return $this->value;
-	}
 }

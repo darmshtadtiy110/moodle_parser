@@ -3,6 +3,7 @@
 
 namespace Parser\Resources;
 
+use General\Signal;
 use Resources\Quiz;
 use General\Properties;
 use General\Request;
@@ -73,7 +74,12 @@ class QuizParser extends Parser
 			try {
 				$index  = (int) $attempt_tr->find("td.c0")[0]->text();
 
-				$name = $attempt_tr->find("td.c1>span")[0]->text();
+				$name_column = $attempt_tr->find("td.c1")[0];
+
+				if(empty($name_column->find("span")))
+					$name = $name_column->text();
+				else
+					$name = $name_column->find("span")[0]->text();
 
 				$grade  = $attempt_tr->find("td.c2");
 				$review = $attempt_tr->find("td.c3>a");
@@ -117,12 +123,18 @@ class QuizParser extends Parser
 
 		$parser->setParsePage($resource_request->response());
 
-		return new Quiz(
-			$id,
-			$parser->getQuizName(),
-			$parser->getAttemptList(),
-			$parser->getSessionKey(),
-			$parser->getTimer()
-		);
+		$quiz = false;
+		try {
+			$quiz = new Quiz(
+				$id,
+				$parser->getQuizName(),
+				$parser->getAttemptList(),
+				$parser->getSessionKey(),
+				$parser->getTimer()
+			);
+		}
+		catch (Exception $e) { Signal::msg($e->getMessage()); }
+
+		return $quiz;
 	}
 }

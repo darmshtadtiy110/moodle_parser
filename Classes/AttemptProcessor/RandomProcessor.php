@@ -13,9 +13,6 @@ class RandomProcessor implements Processor
 		//TODO What if one variant (aka text field)
 		$answers = $question->getVariants();
 
-		$answers_quantity = count($answers);
-		$random_variant = rand(0, $answers_quantity - 1 );
-
-		return $answers[$random_variant];
+		return $answers[mt_rand(0, count($answers) - 1 )];
 	}
 }
