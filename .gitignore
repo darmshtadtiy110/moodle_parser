@@ -2,6 +2,7 @@
 storage/
 cache/
 vendor/
+autoload.php
 composer.json
 composer.lock
 server.php
