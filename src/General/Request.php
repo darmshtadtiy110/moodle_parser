@@ -6,7 +6,6 @@ namespace General;
 
 use DiDom\Document;
 use FileSystem\Cookies;
-use Resources\Student;
 
 class Request
 {
@@ -14,7 +13,7 @@ class Request
 	private $url;
 
 	/** @var Cookies */
-	private $cookies;
+	private $cookies = false;
 
 	/** @var array */
 	private $post_fields;
@@ -38,8 +37,6 @@ class Request
 
 		if( isset($cookies) )
 			$this->cookies = $cookies;
-		else
-			$this->cookies = Student::getInstance()->cookies();
 
 		$this->make();
 	}
@@ -61,8 +58,11 @@ class Request
 		curl_setopt($this->channel, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($this->channel, CURLOPT_SSL_VERIFYPEER, false);
 
-		curl_setopt($this->channel, CURLOPT_COOKIEJAR, $this->cookies->getFullPath());
-		curl_setopt($this->channel, CURLOPT_COOKIEFILE, $this->cookies->getFullPath());
+		if($this->cookies != false)
+		{
+			curl_setopt($this->channel, CURLOPT_COOKIEJAR, $this->cookies->getFullPath());
+			curl_setopt($this->channel, CURLOPT_COOKIEFILE, $this->cookies->getFullPath());
+		}
 
 		$html = curl_exec($this->channel);
 

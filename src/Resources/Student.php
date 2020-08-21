@@ -6,7 +6,6 @@ namespace Resources;
 
 use Exception;
 use FileSystem\Cookies;
-use General\Passport;
 use General\Request;
 use General\Resource;
 use General\Signal;
@@ -14,12 +13,6 @@ use Parser\Resources\StudentParser;
 
 class Student extends Resource
 {
-	/** @var Student */
-	private static $instance;
-
-	/** @var Passport */
-	private $passport;
-
 	/** @var Cookies */
 	private $cookies;
 
@@ -32,12 +25,10 @@ class Student extends Resource
 	public function __construct(
 		$id,
 		$name,
-		Passport $passport,
 		Cookies $cookies,
 		$course_list = []
 	)
 	{
-		$this->passport = $passport;
 		$this->cookies = $cookies;
 
 		$this->course_list = $course_list;
@@ -46,31 +37,15 @@ class Student extends Resource
 		parent::__construct($id, $name);
 	}
 
-	/**
-	 * @param int $passport_id
-	 * @return Student
-	 */
-	public static function getInstance($passport_id = null)
-	{
-		if($passport_id > 0)
-		{
-			$user_passport = Passport::GetById($passport_id);
-
-			self::$instance = self::Auth($user_passport);
-		}
-
-		return self::$instance;
-	}
-
-	public static function Auth(Passport $passport)
+	public static function Auth($login, $password)
 	{
 		$parser = new StudentParser();
 
-		$cookies = new Cookies($passport->login() . ".txt");
+		$cookies = new Cookies($login . ".txt");
 
 		$login_request = Request::Login(
-			$passport->login(),
-			$passport->password(),
+			$login,
+			$password,
 			$cookies
 		);
 
@@ -84,7 +59,7 @@ class Student extends Resource
 			$course_list = $parser->getCoursesArray();
 			$id = $parser->getUserId();
 			try {
-				$student = new Student($id, $name, $passport, $cookies, $course_list);
+				$student = new Student($id, $name, $cookies, $course_list);
 			}
 			catch (Exception $e) { Signal::msg($e->getMessage()); }
 		}
@@ -107,14 +82,6 @@ class Student extends Resource
 	public function getCourse($id)
 	{
 		return $this->course_list[$id];
-	}
-
-	/**
-	 * @return Passport | bool
-	 */
-	public function passport()
-	{
-		return $this->passport;
 	}
 
 	/**

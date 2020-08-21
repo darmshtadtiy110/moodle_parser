@@ -6,6 +6,10 @@ namespace General;
 
 class Passport
 {
+	/**
+	 * Class is deprecated
+	 */
+
 	private $id;
 
 	private $login;
