@@ -3,7 +3,6 @@
     "description": "Package for parsing info from Moodle based education resources and auto solving tests",
     "require": {
         "imangazaliev/didom": "^1.15",
-        "unreal4u/telegram-api": "~3.4",
         "ext-curl": "^7.2",
         "ext-dom": "*"
     }
