@@ -6,9 +6,9 @@ namespace Resources;
 
 use Exception;
 use FileSystem\Cookies;
+use General\Exceptions\LoginError;
 use General\Request;
 use General\Resource;
-use General\Signal;
 use Parser\Resources\StudentParser;
 
 class Student extends Resource
@@ -37,6 +37,12 @@ class Student extends Resource
 		parent::__construct($id, $name);
 	}
 
+	/**
+	 * @param $login
+	 * @param $password
+	 * @return bool|Student
+	 * @throws LoginError
+	 */
 	public static function Auth($login, $password)
 	{
 		$parser = new StudentParser();
@@ -51,8 +57,6 @@ class Student extends Resource
 
 		$parser->setParsePage($login_request->response());
 
-		$student = false;
-
 		if($parser->getLoginResults())
 		{
 			$name = $parser->getUserText();
@@ -61,9 +65,13 @@ class Student extends Resource
 			try {
 				$student = new Student($id, $name, $cookies, $course_list);
 			}
-			catch (Exception $e) { Signal::msg($e->getMessage()); }
+			catch (Exception $e) {
+				throw new LoginError($e->getMessage());
+			}
 		}
-		else { Signal::msg( $parser->getLoginError()); };
+		else
+			throw new LoginError($parser->getLoginError());
+
 		return $student;
 	}
 
