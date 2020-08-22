@@ -1,11 +1,11 @@
 <?php
 
 
-namespace General;
+namespace MoodleParser\General;
 
 
 use DiDom\Document;
-use FileSystem\Cookies;
+use MoodleParser\FileSystem\Cookies;
 
 class Request
 {

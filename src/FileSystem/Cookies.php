@@ -1,7 +1,7 @@
 <?php
 
 
-namespace FileSystem;
+namespace MoodleParser\FileSystem;
 
 
 class Cookies extends File

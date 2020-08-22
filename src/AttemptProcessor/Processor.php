@@ -1,11 +1,11 @@
 <?php
 
 
-namespace AttemptProcessor;
+namespace MoodleParser\AttemptProcessor;
 
 
-use Resources\Question;
-use Resources\Variant;
+use MoodleParser\Resources\Question;
+use MoodleParser\Resources\Variant;
 
 interface Processor
 {

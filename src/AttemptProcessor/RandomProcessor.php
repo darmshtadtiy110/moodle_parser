@@ -1,10 +1,10 @@
 <?php
 
 
-namespace AttemptProcessor;
+namespace MoodleParser\AttemptProcessor;
 
 
-use Resources\Question;
+use MoodleParser\Resources\Question;
 
 class RandomProcessor implements Processor
 {

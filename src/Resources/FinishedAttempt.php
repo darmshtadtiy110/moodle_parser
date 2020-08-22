@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
 
 use Exception;

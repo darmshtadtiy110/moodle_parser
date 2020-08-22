@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Parser\Resources;
+namespace MoodleParser\Parser\Resources;
 
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
-use General\Request;
-use General\Signal;
-use Parser\Parser;
+use MoodleParser\General\Request;
+use MoodleParser\General\Signal;
+use MoodleParser\Parser\Parser;
 use Resources\FinishedAttempt;
 
 class FinishedAttemptParser extends Parser

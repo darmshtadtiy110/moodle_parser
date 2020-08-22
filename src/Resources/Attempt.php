@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
-use General\Resource;
+use MoodleParser\General\Resource;
 
 abstract class Attempt extends Resource
 {

@@ -1,16 +1,16 @@
 <?php
 
 
-namespace Parser\Resources;
+namespace MoodleParser\Parser\Resources;
 
+use Exception;
 
 use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
-use Exception;
-use General\Signal;
-use Parser\Parser;
-use Resources\Question;
-use Resources\Variants\TextVariant;
+use MoodleParser\General\Signal;
+use MoodleParser\Parser\Parser;
+use MoodleParser\Resources\Question;
+use MoodleParser\Resources\Variants\TextVariant;
 
 class QuestionParser extends Parser
 {

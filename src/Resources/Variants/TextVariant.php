@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Resources\Variants;
+namespace MoodleParser\Resources\Variants;
 
-use Resources\Variant;
+use MoodleParser\Resources\Variant;
 
 class TextVariant extends Variant
 {

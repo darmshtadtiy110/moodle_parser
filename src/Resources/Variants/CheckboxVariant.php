@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Variants;
+namespace MoodleParser\Variants;
 
 
 class CheckboxVariant

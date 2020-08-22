@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Parser\Resources;
+namespace MoodleParser\Parser\Resources;
 
 use Exception;
-use General\Properties;
-use General\Request;
-use General\Signal;
-use Parser\Parser;
-use Resources\Course;
+use MoodleParser\General\Properties;
+use MoodleParser\General\Request;
+use MoodleParser\General\Signal;
+use MoodleParser\Parser\Parser;
+use MoodleParser\Resources\Course;
 
 class CourseParser extends Parser
 {

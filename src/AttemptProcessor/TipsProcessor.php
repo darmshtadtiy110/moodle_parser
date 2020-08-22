@@ -1,13 +1,13 @@
 <?php
 
 
-namespace AttemptProcessor;
+namespace MoodleParser\AttemptProcessor;
 
 
 use Exception;
-use Resources\FinishedAttempt;
-use Resources\Question;
-use Resources\Variant;
+use MoodleParser\Resources\FinishedAttempt;
+use MoodleParser\Resources\Question;
+use MoodleParser\Resources\Variant;
 
 class TipsProcessor implements Processor
 {

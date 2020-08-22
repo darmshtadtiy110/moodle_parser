@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
 
-use AttemptProcessor\Processor;
-use General\Request;
-use Parser\Resources\ProcessingAttemptParser;
-use Parser\Resources\QuestionParser;
+use MoodleParser\AttemptProcessor\Processor;
+use MoodleParser\General\Request;
+use MoodleParser\Parser\Resources\ProcessingAttemptParser;
+use MoodleParser\Parser\Resources\QuestionParser;
 
 class ProcessingAttempt extends Attempt
 {

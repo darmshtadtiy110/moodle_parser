@@ -1,7 +1,7 @@
 <?php
 
 
-namespace General;
+namespace MoodleParser\General;
 
 
 class Signal

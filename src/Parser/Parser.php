@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Parser;
+namespace MoodleParser\Parser;
 
 
 use DiDom\Document;
 use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
 use DOMElement;
-use General\Signal;
+use MoodleParser\General\Signal;
 
 abstract class Parser
 {

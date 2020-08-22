@@ -1,11 +1,11 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
 
 use Exception;
-use General\Resource;
+use MoodleParser\General\Resource;
 
 class Question extends Resource
 {

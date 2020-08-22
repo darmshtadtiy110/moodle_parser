@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
-use General\Resource;
-use Parser\Resources\CourseParser;
+use MoodleParser\General\Resource;
+use MoodleParser\Parser\Resources\CourseParser;
 
 class Course extends Resource
 {

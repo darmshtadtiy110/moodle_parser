@@ -5,11 +5,11 @@ namespace Parser\Resources;
 
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
-use General\Properties;
-use General\Request;
-use General\Signal;
-use Parser\Parser;
-use Resources\Quiz;
+use MoodleParser\General\Properties;
+use MoodleParser\General\Request;
+use MoodleParser\General\Signal;
+use MoodleParser\Parser\Parser;
+use MoodleParser\Resources\Quiz;
 
 class QuizParser extends Parser
 {

@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
 
 use Exception;
-use General\Request;
-use General\Resource;
-use General\Signal;
-use Parser\Resources\ProcessingAttemptParser;
+use MoodleParser\General\Request;
+use MoodleParser\General\Resource;
+use MoodleParser\General\Signal;
+use MoodleParser\Parser\Resources\ProcessingAttemptParser;
 
 class Quiz extends Resource
 {

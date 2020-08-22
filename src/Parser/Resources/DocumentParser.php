@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Parser\Resources;
+namespace MoodleParser\Parser\Resources;
 
 
 class DocumentParser

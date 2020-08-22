@@ -1,7 +1,7 @@
 <?php
 
 
-namespace General\Exceptions;
+namespace MoodleParser\General\Exceptions;
 
 use Exception;
 

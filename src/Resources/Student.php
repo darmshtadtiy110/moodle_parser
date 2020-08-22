@@ -1,15 +1,15 @@
 <?php
 
 
-namespace Resources;
+namespace MoodleParser\Resources;
 
 
 use Exception;
-use FileSystem\Cookies;
-use General\Exceptions\LoginError;
-use General\Request;
-use General\Resource;
-use Parser\Resources\StudentParser;
+use MoodleParser\FileSystem\Cookies;
+use MoodleParser\General\Exceptions\LoginError;
+use MoodleParser\General\Request;
+use MoodleParser\General\Resource;
+use MoodleParser\Parser\Resources\StudentParser;
 
 class Student extends Resource
 {

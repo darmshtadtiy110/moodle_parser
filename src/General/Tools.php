@@ -1,6 +1,6 @@
 <?php
 
-namespace General;
+namespace MoodleParser\General;
 
 
 class Tools
