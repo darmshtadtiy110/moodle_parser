@@ -6,7 +6,9 @@ namespace MoodleParser\General;
 
 class Properties
 {
-	private static $target_url = "http://nip.tsatu.edu.ua";
+	private static $target_url = "http://op.tsatu.edu.ua";
+
+	private static $homepage = "/my";
 
 	private static $user_profile = "/user/profile.php?id=";
 
@@ -28,6 +30,14 @@ class Properties
 	{
 		return self::$target_url.self::$login_url;
 	}
+
+    /**
+     * @return string
+     */
+    public static function Homepage(): string
+    {
+        return self::$target_url.self::$homepage;
+    }
 
 	public static function Profile()
 	{

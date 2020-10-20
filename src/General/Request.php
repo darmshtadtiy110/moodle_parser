@@ -18,10 +18,7 @@ class Request
 	/** @var array */
 	private $post_fields;
 
-	/** @var resource */
-	private $channel;
-
-	/** @var Document */
+    /** @var Document */
 	private $response;
 
 	/**
@@ -43,41 +40,36 @@ class Request
 
 	private function make()
 	{
-		$this->channel = curl_init();
+		$channel = curl_init();
 
 		if(is_array($this->post_fields) && count($this->post_fields) > 0)
 		{
-			curl_setopt($this->channel, CURLOPT_POST, 1);
-			curl_setopt($this->channel, CURLOPT_POSTFIELDS, $this->post_fields);
+			curl_setopt($channel, CURLOPT_POST, 1);
+			curl_setopt($channel, CURLOPT_POSTFIELDS, $this->post_fields);
 		}
 
-		curl_setopt($this->channel, CURLOPT_URL, $this->url);
-		curl_setopt($this->channel, CURLOPT_HEADER, 0);
-		curl_setopt($this->channel, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($this->channel, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($this->channel, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($this->channel, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($channel, CURLOPT_URL, $this->url);
+		curl_setopt($channel, CURLOPT_HEADER, 0);
+		curl_setopt($channel, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($channel, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($channel, CURLOPT_CONNECTTIMEOUT, 30);
+		curl_setopt($channel, CURLOPT_SSL_VERIFYPEER, false);
 
 		if($this->cookies != false)
 		{
-			curl_setopt($this->channel, CURLOPT_COOKIEJAR, $this->cookies->getFullPath());
-			curl_setopt($this->channel, CURLOPT_COOKIEFILE, $this->cookies->getFullPath());
+			curl_setopt($channel, CURLOPT_COOKIEJAR, $this->cookies->getFullPath());
+			curl_setopt($channel, CURLOPT_COOKIEFILE, $this->cookies->getFullPath());
 		}
 
-		$html = curl_exec($this->channel);
+		$html = curl_exec($channel);
 
 		//TODO Make Logging function for errors
 		/**
 		 * if(curl_errno($this->channel))
 		*/
-		curl_close($this->channel);
+		curl_close($channel);
 
 		$this->response = new Document($html);
-	}
-
-	public function getUrl()
-	{
-		return $this->url;
 	}
 
 	/**
@@ -91,20 +83,32 @@ class Request
 	/**
 	 * @param $login
 	 * @param $password
+     * @param $token
 	 * @param Cookies $cookies
 	 * @return bool|Request
 	 */
-	public static function Login($login, $password, Cookies $cookies)
+	public static function Login($login, $password, $token, Cookies $cookies)
 	{
 		return new Request(
 			Properties::login(),
 			[
+			    "anchor" => "",
 				"username" => $login,
-				"password" => $password
+				"password" => $password,
+                "logintoken" => $token
 			],
 			$cookies
 		);
 	}
+
+	public static function Homepage(Cookies $cookies)
+    {
+        return new Request(
+            Properties::homepage(),
+            [],
+            $cookies
+        );
+    }
 
 	/**
 	 * @param $session_key

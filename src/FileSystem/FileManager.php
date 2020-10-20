@@ -17,7 +17,11 @@ class FileManager
 
 	public static function save(File $file)
 	{
-		//
+        $file_handle = fopen($file->getFullPath(), "w");
+
+        fwrite($file_handle, $file->content());
+
+        return $file;
 	}
 
 	public static function delete(File $file)

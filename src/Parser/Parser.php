@@ -8,6 +8,7 @@ use DiDom\Document;
 use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
 use DOMElement;
+use MoodleParser\FileSystem\Page;
 use MoodleParser\General\Signal;
 
 abstract class Parser
@@ -18,7 +19,7 @@ abstract class Parser
 	/**
 	 * @param Document $parse_page
 	 */
-	public function setParsePage($parse_page)
+	public function setParsePage(Document $parse_page)
 	{
 		$this->parse_page = $parse_page;
 	}
@@ -53,6 +54,12 @@ abstract class Parser
 
 		return $element;
 	}
+
+	public function savePage()
+    {
+        $page = new Page($this->parse_page->html());
+        $page->save();
+    }
 
 	public static function parseExpressionFromLink($exp, $link)
 	{

@@ -1,6 +1,12 @@
 {
     "name": "darmshtadtiy110/moodle_parser",
     "description": "Package for parsing info from Moodle based education resources and auto solving tests",
+    "autoload": {
+        "psr-4": {
+            "MoodleParser\\": "src/",
+            "darmshtadtiy110\\MoodleParser\\": "src/"
+        }
+    },
     "require": {
         "imangazaliev/didom": "^1.15",
         "ext-curl": "^7.2",

@@ -6,6 +6,7 @@ namespace MoodleParser\Parser\Resources;
 
 use DiDom\Exceptions\InvalidSelectorException;
 use MoodleParser\General\Signal;
+use MoodleParser\Parser\Exceptions\ExpressionNotFound;
 use MoodleParser\Parser\Parser;
 
 class StudentParser extends Parser
@@ -15,7 +16,7 @@ class StudentParser extends Parser
 	 */
 	public function getLoginResults()
 	{
-		$login_info_nodes = $this->find(".login");
+		$login_info_nodes = $this->find(".logininfo");
 
 		if ( empty($login_info_nodes) ) return true;
 		else return $login_info_nodes[0]->text();
@@ -26,28 +27,58 @@ class StudentParser extends Parser
 	 */
 	public function getLoginError()
 	{
-		$error_nodes = $this->find("span.error");
+		$error_nodes = $this->find(".alert.alert-danger");
 		return $error_nodes[0]->text();
 	}
 
 
 	/**
 	 * @return string
-	 */
+	 * @throws ExpressionNotFound
+     */
 	public function getUserText()
 	{
 		$user_text_nodes = $this->find(".usertext");
-		return $user_text_nodes[0]->text();
+
+		if (empty($user_text_nodes))
+		{
+		    throw new ExpressionNotFound(".usertext");
+        }
+		else {
+            return $user_text_nodes[0]->text();
+        }
 	}
+
+    /**
+     * @return string
+     * @throws ExpressionNotFound
+     */
+	public function checkLoginInfo()
+    {
+        $login_modal = $this->find("#modal-body");
+
+        if (empty($login_modal))
+        {
+            throw new ExpressionNotFound("#modal-body");
+        }
+        else {
+            return $login_modal[0]->text();
+        }
+    }
 
 	/**
 	 * @return int
+     * @throws ExpressionNotFound
 	 */
 	public function getUserId()
 	{
 		$user_profile_link = $this->find("a[data-title=profile,moodle]");
-		$link = $user_profile_link[0]->text();
-		return (int) self::parseExpressionFromLink("id", $link);
+		if( !empty($user_profile_link) )
+        {
+            $link = $user_profile_link[0]->text();
+            return (int) self::parseExpressionFromLink("id", $link);
+        }
+	    else throw new ExpressionNotFound("a[data-title=profile,moodle]");
 	}
 
 	/**
@@ -80,4 +111,16 @@ class StudentParser extends Parser
 
 		return $courses_array;
 	}
+
+    /**
+     * @return \DiDom\Element|string|null
+     * @throws ExpressionNotFound
+     */
+	public function getToken()
+    {
+        $token_input = $this->find("input[name=logintoken]");
+        if( !empty($token_input) )
+            return $token_input[0]->attr("value");
+        else throw new ExpressionNotFound("input[name=logintoken]");
+    }
 }

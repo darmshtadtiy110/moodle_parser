@@ -4,6 +4,8 @@
 namespace MoodleParser\General;
 
 
+use MoodleParser\FileSystem\Log;
+
 class Signal
 {
 	public static $login_successful = "You successful login as: ";
@@ -23,8 +25,7 @@ class Signal
 
 	public static function log($msg)
 	{
-		$file = fopen("../../storage/logs/moodle_parser.log", "w+");
-
-		file_put_contents($file, $msg);
+		$log = new Log($msg);
+		$log->save();
 	}
 }
