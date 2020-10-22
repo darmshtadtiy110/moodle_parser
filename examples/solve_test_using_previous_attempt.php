@@ -1,34 +1,37 @@
 <?php
 
 require "vendor/autoload.php";
-require "src/autoload.php";
 
-use Parser\Resources\QuizParser;
-use Resources\Student;
+use MoodleParser\General\Exceptions\AlreadyLogin;
+use MoodleParser\General\Exceptions\LoginError;
+use MoodleParser\General\Student;
 
-use General\Signal;
-use AttemptProcessor\RandomProcessor;
-use AttemptProcessor\TipsProcessor;
-use Parser\Resources\FinishedAttemptParser;
-
-$course_id = 1123; 
-$quiz_id = 144128; 
-$attempt_id = 1631675;
-
-$user = Student::getInstance(3);
-
-$theme_10_quiz = QuizParser::GetById($quiz_id);
-
-$finished_attempt = FinishedAttemptParser::GetById($attempt_id);
-
-$processing = $theme_10_quiz->startProcessingAttempt();
+$student = new Student("vdovinbogdan0@gmail.com", "Darmshtadtiy110");
 
 try {
-	$processing->setProcessor(new TipsProcessor($finished_attempt));
+	$student->auth();
+	$student->loadStudentInfo();
 }
-catch (Exception $e) { Signal::msg($e->getMessage()); }
+catch (LoginError $e) { echo $e->getMessage(); }
+catch (AlreadyLogin $e) {
+	echo $e->getMessage()."\n";
 
-$processing->processAllQuestions();
+	$homepage = $student->request()->homepage();
 
-var_dump($processing);
+	$student->parser()->setParsePage($homepage->response());
 
+	$student->loadStudentInfo();
+
+}
+
+print_r($student->getCourseList());
+
+$tvp = $student->getCourse(846);
+
+echo $tvp->getName();
+
+print_r($tvp->getQuizList());
+
+$test_lr1 = $student->getQuiz(41292);
+
+$student->newAttempt($test_lr1);

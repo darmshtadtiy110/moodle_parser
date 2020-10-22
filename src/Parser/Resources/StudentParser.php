@@ -4,6 +4,7 @@
 namespace MoodleParser\Parser\Resources;
 
 
+use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
 use MoodleParser\General\Signal;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
@@ -86,34 +87,34 @@ class StudentParser extends Parser
 	 */
 	public function getCoursesArray()
 	{
-		$courses_array = [];
+		$navigation_bounds = $this->find("nav.list-group>ul>li");
+		// 4
+		$course_boxes = array_slice($navigation_bounds, 4);
 
-		$course_boxes = $this->find("div.coursebox");
+		$courses_array = [];
 
 		foreach ($course_boxes as $key => $course_box)
 		{
-			$course_name = "";
-			$course_link = "";
-
 			try {
-				$course_name = $course_box->find("div.info>h3>a")[0]->text();
-				$course_link = $course_box->find("div.info>h3>a")[0]->attr("href");
+				$course_name = $course_box->find("span.media-body")[0]->text();
+				$course_link = $course_box->find("a.list-group-item.list-group-item-action")[0]->attr("href");
+
+				$course_id = self::parseExpressionFromLink("id", $course_link);
+
+				if($course_id > 0)
+					$courses_array[$course_id] = [
+						"id" => $course_id,
+						"name" => $course_name
+					];
 			}
 			catch (InvalidSelectorException $e) { Signal::msg($e->getMessage()); }
-
-			$course_id = self::parseExpressionFromLink("id", $course_link);
-			
-			$courses_array[$course_id] = [
-				"id" => $course_id,
-				"name" => $course_name
-			];
 		}
 
 		return $courses_array;
 	}
 
     /**
-     * @return \DiDom\Element|string|null
+     * @return Element|string|null
      * @throws ExpressionNotFound
      */
 	public function getToken()

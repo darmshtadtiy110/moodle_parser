@@ -4,12 +4,6 @@
 namespace MoodleParser\Resources;
 
 
-use Exception;
-use MoodleParser\General\Request;
-use MoodleParser\General\Resource;
-use MoodleParser\General\Signal;
-use MoodleParser\Parser\Resources\ProcessingAttemptParser;
-
 class Quiz extends Resource
 {
 	private $attempt_list = [];
@@ -58,35 +52,5 @@ class Quiz extends Resource
 	public function getBestAttempt()
 	{
 		//TODO
-	}
-
-	/**
-	 * @return ProcessingAttempt
-	 */
-	public function startProcessingAttempt()
-	{
-		$start_attempt_request = Request::StartAttempt(
-			$this->session_key,
-			$this->id,
-			$this->timer_exist
-		);
-		$attempt_parser = new ProcessingAttemptParser();
-
-		$attempt_parser->setParsePage($start_attempt_request->response());
-
-		$new_attempt = false;
-
-		try {
-			$new_attempt = new ProcessingAttempt(
-				$attempt_parser->getAttemptId(),
-				$this->getSessionKey(),
-				$this->getId(),
-				$this->getTimerExist(),
-				$attempt_parser
-			);
-		}
-		catch (Exception $e) { Signal::msg($e->getMessage()); }
-
-		return $new_attempt;
 	}
 }

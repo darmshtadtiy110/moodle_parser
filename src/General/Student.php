@@ -8,8 +8,13 @@ use MoodleParser\FileSystem\Cookies;
 use MoodleParser\General\Exceptions\AlreadyLogin;
 use MoodleParser\General\Exceptions\LoginError;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
+use MoodleParser\Parser\Resources\CourseParser;
+use MoodleParser\Parser\Resources\ProcessingAttemptParser;
+use MoodleParser\Parser\Resources\QuizParser;
 use MoodleParser\Parser\Resources\StudentParser;
 use MoodleParser\Resources\Course;
+use MoodleParser\Resources\ProcessingAttempt;
+use MoodleParser\Resources\Quiz;
 
 class Student
 {
@@ -32,6 +37,9 @@ class Student
 	/** @var StudentParser */
 	private $parser;
 
+	/** @var RequestManager */
+	private $request_manager;
+
 	public function __construct(
 		$login,
         $password
@@ -40,6 +48,7 @@ class Student
 	    $this->login = $login;
 	    $this->password = $password;
 	    $this->createCookies();
+	    $this->request_manager = new RequestManager($this->cookies);
 		$this->parser = new StudentParser();
 	}
 
@@ -48,42 +57,54 @@ class Student
         return $this->parser;
     }
 
+    public function request()
+    {
+    	return $this->request_manager;
+    }
+
 	public function createCookies()
     {
         $cookies = new Cookies($this->login . ".txt");
         $this->cookies = $cookies;
     }
 
+	/**
+	 * @return Cookies
+	 */
+	public function cookies()
+	{
+		return $this->cookies;
+	}
+
     /**
      * @return Student
-     * @throws ExpressionNotFound
      * @throws LoginError|AlreadyLogin
      */
 	public function auth()
 	{
-        $get_token_request = new Request(Properties::login(), [], $this->cookies);
-
-		$this->parser->setParsePage($get_token_request->response());
-
 		try {
-		    $token = $this->parser->getToken();
-            $login_request = Request::Login(
-                $this->login,
-                $this->password,
-                $token,
-                $this->cookies
-            );
+			$this->parser->setParsePage($this->request()->login()->response());
 
-            $this->parser->setParsePage($login_request->response());
+			$token = $this->parser->getToken();
+
+            $this->parser->setParsePage($this->request()->login(
+	            $this->login,
+	            $this->password,
+	            $token
+            )->response());
 
             if($this->parser->getLoginResults() == "Ви не пройшли ідентифікацію")
                 throw new LoginError($this->parser->getLoginError());
             else $this->loadStudentInfo();
         }
         catch (ExpressionNotFound $e) {
-		    $already_login_msg = $this->parser->checkLoginInfo();
-            if($already_login_msg != "")
-                throw new AlreadyLogin($already_login_msg);
+
+			try {
+				$already_login_msg = $this->parser->checkLoginInfo();
+				if($already_login_msg != "")
+					throw new AlreadyLogin($already_login_msg);
+			}
+            catch (ExpressionNotFound $e) {}
 		}
 
 		return $this;
@@ -114,18 +135,62 @@ class Student
 
 	/**
 	 * @param $id
-	 * @return Course
+	 * @return Course|bool
 	 */
 	public function getCourse($id)
 	{
-		return $this->course_list[$id];
+		if(isset($this->course_list[$id]))
+		{
+			$parser = new CourseParser();
+
+			$parser->setParsePage($this->request()->course($id)->response());
+
+			$course = new Course(
+				$id,
+				$parser->getCourseName(),
+				$parser->getQuizList()
+			);
+			return $course;
+		}
+
+		else return false;
 	}
 
-	/**
-	 * @return Cookies
-	 */
-	public function cookies()
+	public function getQuiz($id)
 	{
-		return $this->cookies;
+		$parser = new QuizParser();
+
+		$parser->setParsePage($this->request()->quiz($id)->response());
+
+		$quiz = new Quiz(
+			$id,
+			$parser->getQuizName(),
+			$parser->getAttemptList(),
+			$parser->getSessionKey(),
+			$parser->getTimer()
+		);
+
+		return $quiz;
+	}
+
+	public function newAttempt(Quiz $quiz)
+	{
+		$attempt_parser = new ProcessingAttemptParser();
+
+		$attempt_parser->setParsePage($this->request()->startAttempt(
+			$quiz->getSessionKey(),
+			$quiz->getId(),
+			$quiz->getTimerExist()
+		)->response());
+
+		$new_attempt = new ProcessingAttempt(
+			$attempt_parser->getAttemptId(),
+			$quiz->getSessionKey(),
+			$quiz->getId(),
+			$quiz->getTimerExist(),
+			$attempt_parser
+		);
+
+		return $new_attempt;
 	}
 }

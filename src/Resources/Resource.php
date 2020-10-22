@@ -1,10 +1,8 @@
 <?php
 
 
-namespace MoodleParser\General;
+namespace MoodleParser\Resources;
 
-
-use Exception;
 
 abstract class Resource
 {
@@ -18,20 +16,12 @@ abstract class Resource
 	 * Resource constructor.
 	 * @param $id
 	 * @param string $name
-	 * @throws Exception
 	 */
 	public function __construct($id, $name = "")
 	{
-		if(is_int($id))
-		{
-			$this->id = $id;
-		}
-		else throw new Exception("Resource id is wrong! ( ".$id." )");
+		$this->id = $id;
 
-		if($name != "")
-		{
-			$this->name = $name;
-		}
+		$this->name = $name;
 	}
 
 	/**

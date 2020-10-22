@@ -1,15 +1,11 @@
 <?php
 
 
-namespace Parser\Resources;
+namespace MoodleParser\Parser\Resources;
 
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
-use MoodleParser\General\Properties;
-use MoodleParser\General\Request;
-use MoodleParser\General\Signal;
 use MoodleParser\Parser\Parser;
-use MoodleParser\Resources\Quiz;
 
 class QuizParser extends Parser
 {
@@ -23,7 +19,7 @@ class QuizParser extends Parser
 		$session = "";
 
 		try{
-			$session = $this->parse_page->find("form>div>input[name=sesskey]")[0]->attr("value");
+			$session = $this->parse_page->find("input[name=sesskey]")[0]->attr("value");
 		}
 		catch (Exception $e) {
 			echo "setSessionKey exception: ".$e->getMessage();
@@ -108,33 +104,5 @@ class QuizParser extends Parser
 			catch (InvalidSelectorException $e) { echo "loadAttemptList exception ".$e->getMessage(); }
 		}
 		return $attempt_list;
-	}
-
-	/**
-	 * @param $id
-	 * @return Quiz
-	 */
-	public static function GetById($id)
-	{
-		$link = Properties::Quiz().$id;
-		$parser = new QuizParser();
-
-		$resource_request = new Request($link);
-
-		$parser->setParsePage($resource_request->response());
-
-		$quiz = false;
-		try {
-			$quiz = new Quiz(
-				$id,
-				$parser->getQuizName(),
-				$parser->getAttemptList(),
-				$parser->getSessionKey(),
-				$parser->getTimer()
-			);
-		}
-		catch (Exception $e) { Signal::msg($e->getMessage()); }
-
-		return $quiz;
 	}
 }

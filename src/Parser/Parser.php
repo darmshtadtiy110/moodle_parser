@@ -7,6 +7,7 @@ namespace MoodleParser\Parser;
 use DiDom\Document;
 use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
+use DiDom\Node;
 use DOMElement;
 use MoodleParser\FileSystem\Page;
 use MoodleParser\General\Signal;
@@ -39,20 +40,25 @@ abstract class Parser
 
 	/**
 	 * @param $expression
+	 * @param Element[]|DOMElement[]|Node $element
 	 * @return Element[]|DOMElement[]
 	 */
-	public function find($expression)
+	public function find($expression, $element = null)
 	{
-		$element = false;
+		$sought = false;
+
 		try {
-			$element = $this->parse_page->find($expression);
+			if(isset($element))
+				$sought = $element->find($expression);
+			else
+				$sought = $this->parse_page->find($expression);
 		}
 		catch (InvalidSelectorException $e) {
 			Signal::msg($e->getMessage());
 			Signal::msg($e->getTraceAsString());
 		}
 
-		return $element;
+		return $sought;
 	}
 
 	public function savePage()

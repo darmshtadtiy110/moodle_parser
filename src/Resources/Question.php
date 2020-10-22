@@ -5,7 +5,6 @@ namespace MoodleParser\Resources;
 
 
 use Exception;
-use MoodleParser\General\Resource;
 
 class Question extends Resource
 {
@@ -23,6 +22,14 @@ class Question extends Resource
 
 	protected $saved = false;
 
+	/**
+	 * Question constructor.
+	 * @param $id
+	 * @param $text
+	 * @param $variants
+	 * @param $correct
+	 * @throws Exception
+	 */
 	public function __construct($id, $text, $variants, $correct)
 	{
 		if(!is_bool($correct)) throw new Exception("Correct arg isn't bool");

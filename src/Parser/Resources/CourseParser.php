@@ -3,12 +3,7 @@
 
 namespace MoodleParser\Parser\Resources;
 
-use Exception;
-use MoodleParser\General\Properties;
-use MoodleParser\General\Request;
-use MoodleParser\General\Signal;
 use MoodleParser\Parser\Parser;
-use MoodleParser\Resources\Course;
 
 class CourseParser extends Parser
 {
@@ -46,29 +41,5 @@ class CourseParser extends Parser
 	public function getCourseName()
 	{
 		return $this->find("div.page-header-headings>h1")[0]->text();
-	}
-
-	/**
-	 * @param $id
-	 * @return Course
-	 */
-	public static function GetById($id)
-	{
-		$link = Properties::Course().$id;
-		$parser = new CourseParser();
-
-		$resource_request = new Request($link);
-		$parser->setParsePage($resource_request->response());
-
-		$course = false;
-		try {
-			$course = new Course(
-				$id,
-				$parser->getCourseName(),
-				$parser->getQuizList()
-			);
-		}
-		catch (Exception $e) { Signal::msg($e->getMessage()); }
-		return $course;
 	}
 }

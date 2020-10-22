@@ -34,7 +34,7 @@ class Properties
     /**
      * @return string
      */
-    public static function Homepage(): string
+    public static function Homepage()
     {
         return self::$target_url.self::$homepage;
     }
