@@ -88,7 +88,10 @@ class TipsProcessor implements Processor
 				}
 			}
 		}
-		return false;
+		// if tips not find use great random
+		$great_random = new RandomProcessor();
+
+		return $great_random->choiceVariant($question);
 	}
 
 	private function randomFromTips(Question $question, Question $tip)

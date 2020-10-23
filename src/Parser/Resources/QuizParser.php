@@ -47,15 +47,17 @@ class QuizParser extends Parser
 		$timer_exist = false;
 
 		try {
-			$quiz_info = $this->parse_page->find("div.box.quizinfo>p");
+			$quiz_info = $this->parse_page->find("div.box.py-3.quizinfo>p");
+			if(count($quiz_info) > 1) return true;
 		}
 		catch (Exception $e) { echo "isTimer exception: ".$e->getMessage(); }
-
+/**
 		if(
 			!empty($quiz_info) &&
 			"Обмеження в часі" === substr($quiz_info[0]->text(), 0, 30)
 		)
 			$timer_exist = true;
+*/
 
 		return $timer_exist;
 	}

@@ -206,6 +206,15 @@ class Student
 			$quiz->getTimerExist()
 		)->response());
 
+		if($quiz->getTimerExist() == true)
+		{
+			$attempt_parser->setParsePage($this->request()->startAttempt(
+				$quiz->getSessionKey(),
+				$quiz->getId(),
+				$quiz->getTimerExist()
+			)->response());
+		}
+
 		$new_attempt = new ProcessingAttempt(
 			$attempt_parser->getAttemptId(),
 			$this,
