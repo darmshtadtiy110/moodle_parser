@@ -4,7 +4,6 @@
 namespace MoodleParser\AttemptProcessor;
 
 
-use Exception;
 use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\Question;
 use MoodleParser\Resources\Variant;
@@ -16,8 +15,7 @@ class TipsProcessor implements Processor
 
 	/**
 	 * TipsProcessor constructor.
-	 * @param $tips_attempt
-	 * @throws Exception
+	 * @param FinishedAttempt|FinishedAttempt[] $tips_attempt
 	 */
 	public function __construct($tips_attempt)
 	{
@@ -34,7 +32,7 @@ class TipsProcessor implements Processor
 			$this->compareTips();
 		}
 
-		else throw new Exception("Wrong Tips argument!");
+		return false;
 	}
 
 	private function compareTips()

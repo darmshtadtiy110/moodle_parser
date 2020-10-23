@@ -9,10 +9,13 @@ use MoodleParser\General\Exceptions\AlreadyLogin;
 use MoodleParser\General\Exceptions\LoginError;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
 use MoodleParser\Parser\Resources\CourseParser;
+use MoodleParser\Parser\Resources\FinishedAttemptParser;
 use MoodleParser\Parser\Resources\ProcessingAttemptParser;
+use MoodleParser\Parser\Resources\QuestionParser;
 use MoodleParser\Parser\Resources\QuizParser;
 use MoodleParser\Parser\Resources\StudentParser;
 use MoodleParser\Resources\Course;
+use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\ProcessingAttempt;
 use MoodleParser\Resources\Quiz;
 
@@ -137,7 +140,7 @@ class Student
 	 * @param $id
 	 * @return Course|bool
 	 */
-	public function getCourse($id)
+	public function openCourse($id)
 	{
 		if(isset($this->course_list[$id]))
 		{
@@ -156,7 +159,7 @@ class Student
 		else return false;
 	}
 
-	public function getQuiz($id)
+	public function openQuiz($id)
 	{
 		$parser = new QuizParser();
 
@@ -173,6 +176,26 @@ class Student
 		return $quiz;
 	}
 
+	public function openAttempt($id)
+	{
+		$attempt_review_request = $this->request()->attemptReview($id)->response();
+
+		$attempt_parser = new FinishedAttemptParser();
+		$questions_parser = new QuestionParser();
+
+		$attempt_parser->setParsePage($attempt_review_request);
+		$questions_parser->setParsePage($attempt_review_request);
+
+		$attempt = new FinishedAttempt(
+			$id,
+			$attempt_parser->getGrade(),
+			$attempt_parser->getName(),
+			$questions_parser->parseQuestions()
+		);
+
+		return $attempt;
+	}
+
 	public function newAttempt(Quiz $quiz)
 	{
 		$attempt_parser = new ProcessingAttemptParser();
@@ -185,9 +208,7 @@ class Student
 
 		$new_attempt = new ProcessingAttempt(
 			$attempt_parser->getAttemptId(),
-			$quiz->getSessionKey(),
-			$quiz->getId(),
-			$quiz->getTimerExist(),
+			$this,
 			$attempt_parser
 		);
 

@@ -3,12 +3,11 @@
 
 namespace MoodleParser\Parser\Resources;
 
+use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
-use Exception;
-use MoodleParser\General\Request;
+use DOMElement;
 use MoodleParser\General\Signal;
 use MoodleParser\Parser\Parser;
-use Resources\FinishedAttempt;
 
 class FinishedAttemptParser extends Parser
 {
@@ -53,9 +52,13 @@ class FinishedAttemptParser extends Parser
 		return $question_list;
 	}
 
+	/**
+	 * @return Element|DOMElement
+	 */
 	public function findGeneralTable()
 	{
-		return $this->find("table.generaltable")[0];
+		$table_node = $this->find("table.generaltable");
+		return $table_node[0];
 	}
 
 	public function getGrade()
@@ -64,7 +67,7 @@ class FinishedAttemptParser extends Parser
 
 		try {
 			$rows = $general_table->find("tbody>tr");
-			$grade = (int) $rows[4]->find("td>b")[0]->text();
+			$grade = (int) $rows[5]->find("td>b")[0]->text();
 			return $grade;
 		}
 		catch (InvalidSelectorException $e) {}
@@ -82,29 +85,5 @@ class FinishedAttemptParser extends Parser
 		}
 		catch (InvalidSelectorException $e) {}
 		return false;
-	}
-
-	public static function GetById($id)
-	{
-		$attempt_review_request = Request::AttemptReview($id);
-
-		$attempt_parser = new FinishedAttemptParser();
-		$questions_parser = new QuestionParser();
-
-		$attempt_parser->setParsePage($attempt_review_request->response());
-		$questions_parser->setParsePage($attempt_review_request->response());
-
-		$attempt = false;
-		try {
-			$attempt = new FinishedAttempt(
-				$id,
-				$attempt_parser->getGrade(),
-				$attempt_parser->getName(),
-				$questions_parser->parseQuestions()
-			);
-		}
-		catch (Exception $e) { Signal::msg($e->getMessage()); }
-
-		return $attempt;
 	}
 }

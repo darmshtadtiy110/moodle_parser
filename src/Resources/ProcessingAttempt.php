@@ -5,7 +5,7 @@ namespace MoodleParser\Resources;
 
 
 use MoodleParser\AttemptProcessor\Processor;
-use MoodleParser\General\Request;
+use MoodleParser\General\Student;
 use MoodleParser\Parser\Resources\ProcessingAttemptParser;
 use MoodleParser\Parser\Resources\QuestionParser;
 
@@ -20,14 +20,7 @@ class ProcessingAttempt extends Attempt
 	/** @var Processor */
 	protected $processor;
 
-	/** @var string */
-	private $session_key;
-
-	/** @var int */
-	private $quiz_id;
-
-	/** @var bool */
-	private $timer_exist = false;
+	private $student;
 
 	/** @var Question[] */
 	private $question_list = [];
@@ -36,15 +29,11 @@ class ProcessingAttempt extends Attempt
 
 	public function __construct(
 		$id,
-		$session_key,
-		$quiz_id,
-		$timer_exist,
+		Student $student,
 		ProcessingAttemptParser $parser
 	)
 	{
-		$this->session_key = $session_key;
-		$this->quiz_id = $quiz_id;
-		$this->timer_exist = $timer_exist;
+		$this->student = $student;
 
 		$this->parser = $parser;
 
@@ -53,6 +42,11 @@ class ProcessingAttempt extends Attempt
 		parent::__construct($id);
 
 		$this->use_parser();
+	}
+
+	private function student()
+	{
+		return $this->student;
 	}
 
 	public function setProcessor(Processor $processor)
@@ -144,7 +138,11 @@ class ProcessingAttempt extends Attempt
 
 	private function processPage()
 	{
-		$next_page_request = Request::ProcessAttempt($this->form_inputs);
+		$next_page_request =
+			$this->student()
+				 ->request()
+				 ->processAttempt($this->form_inputs);
+
 		$this->parser->setParsePage($next_page_request->response());
 	}
 
@@ -167,7 +165,11 @@ class ProcessingAttempt extends Attempt
 
 	public function finish()
 	{
-		$summary_page_request = Request::FinishAttempt($this->getId());
+		$summary_page_request =
+			$this->student()
+			->request()
+			->finishAttempt($this->getId());
+
 		$this->parser->setParsePage($summary_page_request->response());
 
 		$this->form_inputs = $this->parser->parseForm("finish_attempt");

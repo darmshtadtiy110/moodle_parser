@@ -49,8 +49,16 @@ class Quiz extends Resource
 		return $this->session_key;
 	}
 
-	public function getBestAttempt()
+	public function getBestAttemptID()
 	{
-		//TODO
+		$index = [];
+
+		foreach ($this->attempt_list as $key => $attempt_arr)
+		{
+			if($attempt_arr["state"] == "finished")
+				$index[$attempt_arr["grade"]] = $key;
+		}
+
+		return array_pop($index);
 	}
 }

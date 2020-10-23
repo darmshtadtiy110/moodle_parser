@@ -78,7 +78,7 @@ class QuizParser extends Parser
 					$name = $name_column->find("span")[0]->text();
 
 				$grade  = $attempt_tr->find("td.c2");
-				$review = $attempt_tr->find("td.c3>a");
+				$review = $attempt_tr->find("td.c4>a");
 
 				if( empty($review) )
 				{
