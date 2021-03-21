@@ -124,4 +124,9 @@ class StudentParser extends Parser
             return $token_input[0]->attr("value");
         else throw new ExpressionNotFound("input[name=logintoken]");
     }
+
+    public function getSessionKey()
+    {
+    	return $this->find("input[name=sesskey]")[0]->attr("value");
+    }
 }
