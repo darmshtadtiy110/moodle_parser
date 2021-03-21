@@ -3,14 +3,13 @@
 
 namespace MoodleParser\Parser\Resources;
 
-use Exception;
-
 use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
+use Exception;
 use MoodleParser\General\Signal;
 use MoodleParser\Parser\Parser;
 use MoodleParser\Resources\Question;
-use MoodleParser\Resources\Variants\TextVariant;
+use MoodleParser\Resources\Variants\Radio;
 
 class QuestionParser extends Parser
 {
@@ -87,7 +86,7 @@ class QuestionParser extends Parser
 					switch ($var_type)
 					{
 						case "text":
-							$variant = new TextVariant(
+							$variant = new Radio(
 								$key,
 								substr($variant_text, 3),
 								$input_is_checked,
@@ -98,18 +97,20 @@ class QuestionParser extends Parser
 						case "pic":
 							continue;
 					}
+
+					if(!empty($correct_answer))
+					{
+						$correct_answer_text = str_replace("Правильна відповідь: ", "", $correct_answer[0]->text());
+
+						if($variant->getValue() == $correct_answer_text)
+							$variant->setIsCorrect(true);
+					}
+
+					$variants[] = $variant;
 				}
 				catch (Exception $e) { Signal::msg($e->getMessage()); }
 
-				if(!empty($correct_answer))
-				{
-					$correct_answer_text = str_replace("Правильна відповідь: ", "", $correct_answer[0]->text());
 
-					if($variant->getValue() == $correct_answer_text)
-						$variant->setIsCorrect(true);
-				}
-
-				$variants[] = $variant;
 			}
 		}
 		catch (InvalidSelectorException $e) { Signal::msg("IdentQuestion error: ".$e->getMessage()); }
