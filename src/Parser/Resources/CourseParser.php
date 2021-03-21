@@ -14,18 +14,23 @@ class CourseParser extends Parser
 	{
 		$quiz_list = [];
 
-		$quiz_nodes = $this->find("li.activity.quiz.modtype_quiz>div>div>div>div>a");
+		$quiz_nodes = $this->find("li.activity.quiz.modtype_quiz");
 
 
 		if( !empty($quiz_nodes) )
 		{
 			foreach($quiz_nodes as $quiz_node)
 			{
-				$quiz_name = $quiz_node->text();
-				$quiz_link = $quiz_node->attr("href");
-				$quiz_id = Parser::parseExpressionFromLink("id", $quiz_link);
+				$quiz_name_span = $this->find("span.instancename", $quiz_node)[0];
 
-				if($quiz_name && $quiz_link)
+				if($quiz_name_span->hasChildren() === true && count($quiz_name_span->children()) > 1)
+					$quiz_name_span->lastChild()->remove();
+
+				$quiz_name = $quiz_name_span->text();
+
+				$quiz_id = substr($quiz_node->attr("id"), 7);
+
+				if($quiz_id)
 				{
 					$quiz_list[$quiz_id] = [
 						"id" => $quiz_id,
