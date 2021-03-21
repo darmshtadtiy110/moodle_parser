@@ -39,6 +39,14 @@ class Quiz extends Resource
 		return $this->attempt_list;
 	}
 
+	public function getFinishedAttemptList()
+	{
+		$finished_attempt = [];
+		foreach ($this->attempt_list as $key => $attempt)
+			if($attempt["state"] == "finished")
+				$finished_attempt[] = $attempt;
+	}
+
 	public function getTimerExist()
 	{
 		return $this->timer_exist;
