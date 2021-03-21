@@ -29,7 +29,7 @@ class Request
 	 */
 	public function __construct($url, $post_fields = [], Cookies $cookies = null)
 	{
-		$this->url = $url;
+		$this->url = Properties::$target_url.$url;
 		$this->post_fields = $post_fields;
 
 		if( isset($cookies) )

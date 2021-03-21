@@ -5,7 +5,7 @@ namespace MoodleParser\Resources\Variants;
 
 use MoodleParser\Resources\Variant;
 
-class TextVariant extends Variant
+class Radio extends Variant
 {
 	public function __construct($id, $text, $checked, $input_name, $input_value)
 	{

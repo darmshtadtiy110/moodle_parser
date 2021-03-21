@@ -34,6 +34,8 @@ class Student
 
 	public $last_time;
 
+	public $session_key;
+
 	/** @var Course[] */
 	private $course_list = [];
 
@@ -50,9 +52,6 @@ class Student
 	{
 	    $this->login = $login;
 	    $this->password = $password;
-	    $this->createCookies();
-	    $this->request_manager = new RequestManager($this->cookies);
-		$this->parser = new StudentParser();
 	}
 
 	public function parser()
@@ -85,6 +84,12 @@ class Student
      */
 	public function auth()
 	{
+		$this->createCookies();
+		$this->parser = new StudentParser();
+		$this->request_manager = new RequestManager(
+			$this->cookies
+		);
+
 		try {
 			$this->parser->setParsePage($this->request()->login()->response());
 
@@ -119,6 +124,7 @@ class Student
             $this->name = $this->parser->getUserText();
             $this->course_list = $this->parser->getCoursesArray();
             $this->id = $this->parser->getUserId();
+            $this->request_manager->setSessionKey($this->parser->getSessionKey());
         }
         catch (ExpressionNotFound $e) {
             Signal::log($e);
