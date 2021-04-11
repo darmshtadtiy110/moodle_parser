@@ -43,8 +43,13 @@ class Quiz extends Resource
 	{
 		$finished_attempt = [];
 		foreach ($this->attempt_list as $key => $attempt)
+		{
 			if($attempt["state"] == "finished")
+			{
 				$finished_attempt[] = $attempt;
+			}
+		}
+		return $finished_attempt;
 	}
 
 	public function getTimerExist()
