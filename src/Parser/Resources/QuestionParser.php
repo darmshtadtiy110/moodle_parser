@@ -9,6 +9,7 @@ use Exception;
 use MoodleParser\General\Signal;
 use MoodleParser\Parser\Parser;
 use MoodleParser\Resources\Question;
+use MoodleParser\Resources\Variants\Checkbox;
 use MoodleParser\Resources\Variants\Radio;
 
 class QuestionParser extends Parser
@@ -66,26 +67,33 @@ class QuestionParser extends Parser
 
 			foreach ($variant_nodes as $key => $node)
 			{
-				$var_type = "text";
-
-				$variant_text = $node->find("label")[0]->text();
-				/**
-				if (strlen($variant_text) == 0)
-				{
-
-				}*/
-				$answer_input_node = $node->find("input")[0];
-
-				$answer_input_name = $answer_input_node->attr("name");
-				$answer_input_value = $answer_input_node->attr("value");
-
-				$input_is_checked = $answer_input_node->attr("checked");
-				$input_is_checked = ($input_is_checked == "checked") ? true : false;
-
 				try {
+					$variant_text = $node->find("label")[0]->text();
+
+					$node_entire_inputs = $node->find("input");
+					// select no hidden input
+					$answer_input_node = $node_entire_inputs[count($node_entire_inputs) - 1];
+
+					$var_type = $answer_input_node->attr("type");
+
+					$answer_input_name = $answer_input_node->attr("name");
+					$answer_input_value = $answer_input_node->attr("value");
+
 					switch ($var_type)
 					{
-						case "text":
+						case "checkbox":
+							$variant = new Checkbox(
+								$key,
+								$variant_text,
+								$answer_input_name,
+								$answer_input_value
+							);
+							continue;
+						case "radio":
+						default:
+							$input_is_checked = $answer_input_node->attr("checked");
+							$input_is_checked = ($input_is_checked == "checked") ? true : false;
+
 							$variant = new Radio(
 								$key,
 								substr($variant_text, 3),
@@ -93,8 +101,6 @@ class QuestionParser extends Parser
 								$answer_input_name,
 								$answer_input_value
 							);
-							continue;
-						case "pic":
 							continue;
 					}
 
