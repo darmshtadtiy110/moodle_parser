@@ -79,7 +79,6 @@ function pass_course(Student $student, $course_id)
 	pass_test($student, array_keys($quiz_list));
 }
 
-//pass_course($student, 1440);
 pass_test($student,
 	[
 		94432,
@@ -109,4 +108,3 @@ pass_test($student,
 		94529,
 		94530
 	]);
-//pass_module_quiz($student, 70563);
