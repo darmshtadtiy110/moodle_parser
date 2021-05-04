@@ -1,14 +1,14 @@
 <?php
 
 
-namespace MoodleParser\AttemptProcessor;
+namespace MoodleParser\Processors;
 
 
 use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\Question;
 use MoodleParser\Resources\Variant;
 
-class TipsProcessor implements Processor
+class TipsQuestionProcessor implements QuestionProcessor
 {
 	/** @var Question[] */
 	protected $tips = [];
@@ -89,7 +89,7 @@ class TipsProcessor implements Processor
 			}
 		}
 		// if tips not find use great random
-		$great_random = new RandomProcessor();
+		$great_random = new RandomQuestionProcessor();
 
 		return $great_random->choiceVariant($question);
 	}

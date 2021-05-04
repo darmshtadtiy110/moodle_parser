@@ -8,6 +8,7 @@ use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
 use MoodleParser\General\Signal;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
+use MoodleParser\Parser\Exceptions\TokenDoesNotExist;
 use MoodleParser\Parser\Parser;
 
 class StudentParser extends Parser
@@ -43,7 +44,7 @@ class StudentParser extends Parser
 
 		if (empty($user_text_nodes))
 		{
-		    throw new ExpressionNotFound(".usertext");
+		    throw new ExpressionNotFound($this, ".usertext");
         }
 		else {
             return $user_text_nodes[0]->text();
@@ -60,7 +61,7 @@ class StudentParser extends Parser
 
         if (empty($login_modal))
         {
-            throw new ExpressionNotFound("#modal-body");
+            throw new ExpressionNotFound($this, "#modal-body");
         }
         else {
             return $login_modal[0]->text();
@@ -79,7 +80,7 @@ class StudentParser extends Parser
             $link = $user_profile_link[0]->text();
             return (int) self::parseExpressionFromLink("id", $link);
         }
-	    else throw new ExpressionNotFound("a[data-title=profile,moodle]");
+	    else throw new ExpressionNotFound($this,"a[data-title=profile,moodle]");
 	}
 
 	/**
@@ -115,14 +116,14 @@ class StudentParser extends Parser
 
     /**
      * @return Element|string|null
-     * @throws ExpressionNotFound
+     * @throws TokenDoesNotExist
      */
 	public function getToken()
     {
         $token_input = $this->find("input[name=logintoken]");
         if( !empty($token_input) )
             return $token_input[0]->attr("value");
-        else throw new ExpressionNotFound("input[name=logintoken]");
+        else throw new TokenDoesNotExist($this);
     }
 
     public function getSessionKey()

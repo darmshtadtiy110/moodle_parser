@@ -1,12 +1,12 @@
 <?php
 
 
-namespace MoodleParser\AttemptProcessor;
+namespace MoodleParser\Processors;
 
 
 use MoodleParser\Resources\Question;
 
-class RandomProcessor implements Processor
+class RandomQuestionProcessor implements QuestionProcessor
 {
 	public function choiceVariant(Question $question)
 	{

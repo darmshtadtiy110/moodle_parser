@@ -1,13 +1,13 @@
 <?php
 
 
-namespace MoodleParser\AttemptProcessor;
+namespace MoodleParser\Processors;
 
 
 use MoodleParser\Resources\Question;
 use MoodleParser\Resources\Variant;
 
-interface Processor
+interface QuestionProcessor
 {
 	/**
 	 * @param Question $question

@@ -6,7 +6,7 @@ namespace MoodleParser\Resources;
 
 class Quiz extends Resource
 {
-	private $attempt_list = [];
+	private $finished_attempts = [];
 
 	private $session_key;
 
@@ -16,11 +16,12 @@ class Quiz extends Resource
 	public function __construct(
 		$id,
 		$name,
-		$attempt_list,
+		$all_attempts,
 		$session_key,
 		$timer_exist
 	) {
-		$this->attempt_list = $attempt_list;
+
+		$this->finished_attempts = $this->getFinishedAttemptList($all_attempts);
 		$this->session_key = $session_key;
 		$this->timer_exist = $timer_exist;
 
@@ -29,24 +30,24 @@ class Quiz extends Resource
 
 	public function getAttempt($id)
 	{
-		if(array_key_exists($id, $this->attempt_list))
-			return $this->attempt_list[$id];
+		if(array_key_exists($id, $this->finished_attempts))
+			return $this->finished_attempts[$id];
 		return false;
 	}
 
-	public function getAttemptList()
+	public function getFinishedAttempts()
 	{
-		return $this->attempt_list;
+		return $this->finished_attempts;
 	}
 
-	public function getFinishedAttemptList()
+	private function getFinishedAttemptList($attempts)
 	{
 		$finished_attempt = [];
-		foreach ($this->attempt_list as $key => $attempt)
+		foreach ($attempts as $key => $attempt)
 		{
 			if($attempt["state"] == "finished")
 			{
-				$finished_attempt[] = $attempt;
+				$finished_attempt[$key] = $attempt;
 			}
 		}
 		return $finished_attempt;
@@ -66,7 +67,7 @@ class Quiz extends Resource
 	{
 		$index = [];
 
-		foreach ($this->attempt_list as $key => $attempt_arr)
+		foreach ($this->finished_attempts as $key => $attempt_arr)
 		{
 			if($attempt_arr["state"] == "finished")
 				$index[$attempt_arr["grade"]] = $key;

@@ -14,15 +14,21 @@ use MoodleParser\General\Signal;
 
 abstract class Parser
 {
-	/** @var Document */
-	protected $parse_page;
+	/** @var Document|Element */
+	protected $document;
+
+	public function __construct($document)
+	{
+		$this->document = $document;
+	}
 
 	/**
-	 * @param Document $parse_page
+	 * @deprecated
+	 * @param Document $document
 	 */
-	public function setParsePage(Document $parse_page)
+	public function setParsePage(Document $document)
 	{
-		$this->parse_page = $parse_page;
+		$this->document = $document;
 	}
 
 	/**
@@ -30,12 +36,12 @@ abstract class Parser
 	 */
 	public function getParsePage()
 	{
-		return $this->parse_page;
+		return $this->document;
 	}
 
 	public function purgePage()
 	{
-		$this->parse_page = null;
+		$this->document = null;
 	}
 
 	/**
@@ -51,7 +57,7 @@ abstract class Parser
 			if(isset($element))
 				$sought = $element->find($expression);
 			else
-				$sought = $this->parse_page->find($expression);
+				$sought = $this->document->find($expression);
 		}
 		catch (InvalidSelectorException $e) {
 			Signal::msg($e->getMessage());
@@ -63,7 +69,7 @@ abstract class Parser
 
 	public function savePage()
     {
-        $page = new Page($this->parse_page->html());
+        $page = new Page($this->document->html());
         $page->save();
     }
 

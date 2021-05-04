@@ -5,13 +5,12 @@ namespace MoodleParser\General;
 
 
 use MoodleParser\FileSystem\Cookies;
-use MoodleParser\General\Exceptions\AlreadyLogin;
-use MoodleParser\General\Exceptions\LoginError;
+use MoodleParser\Parser\Exceptions\AlreadyLogin;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
+use MoodleParser\Parser\Exceptions\LoginError;
+use MoodleParser\Parser\Exceptions\NewAttemptBan;
+use MoodleParser\Parser\Exceptions\TokenDoesNotExist;
 use MoodleParser\Parser\Resources\CourseParser;
-use MoodleParser\Parser\Resources\FinishedAttemptParser;
-use MoodleParser\Parser\Resources\ProcessingAttemptParser;
-use MoodleParser\Parser\Resources\QuestionParser;
 use MoodleParser\Parser\Resources\QuizParser;
 use MoodleParser\Parser\Resources\StudentParser;
 use MoodleParser\Resources\Course;
@@ -45,6 +44,12 @@ class Student
 	/** @var RequestManager */
 	private $request_manager;
 
+	/**
+	 * Student constructor.
+	 * @param $login
+	 * @param $password
+	 * @throws TokenDoesNotExist
+	 */
 	public function __construct(
 		$login,
         $password
@@ -52,6 +57,22 @@ class Student
 	{
 	    $this->login = $login;
 	    $this->password = $password;
+
+		try {
+			$this->auth();
+			$this->loadStudentInfo();
+		}
+		catch (LoginError $e) { echo $e->getMessage(); }
+		catch (AlreadyLogin $e)
+		{
+			echo $e->getMessage()."\n";
+
+			$homepage = $this->request()->homepage();
+
+			$this->parser = new StudentParser($homepage->response());
+
+			$this->loadStudentInfo();
+		}
 	}
 
 	public function parser()
@@ -78,42 +99,44 @@ class Student
 		return $this->cookies;
 	}
 
-    /**
-     * @return Student
-     * @throws LoginError|AlreadyLogin
-     */
+	/**
+	 * @return $this
+	 * @throws AlreadyLogin
+	 * @throws LoginError
+	 * @throws TokenDoesNotExist
+	 */
 	public function auth()
 	{
 		$this->createCookies();
-		$this->parser = new StudentParser();
-		$this->request_manager = new RequestManager(
-			$this->cookies
-		);
+
+		$this->request_manager = new RequestManager($this->cookies());
+
+		$this->parser = new StudentParser($this->request()->login()->response());
+
+		$token = $this->parser->getToken();
+
+		$this->parser = new StudentParser($this->request()->login(
+			$this->login,
+			$this->password,
+			$token
+		)->response());
+
+		if($this->parser->getLoginResults() == "Ви не пройшли ідентифікацію")
+			throw new LoginError($this->parser, $this->parser->getLoginError());
+
+		else $this->loadStudentInfo();
 
 		try {
-			$this->parser->setParsePage($this->request()->login()->response());
-
-			$token = $this->parser->getToken();
-
-            $this->parser->setParsePage($this->request()->login(
-	            $this->login,
-	            $this->password,
-	            $token
-            )->response());
-
-            if($this->parser->getLoginResults() == "Ви не пройшли ідентифікацію")
-                throw new LoginError($this->parser->getLoginError());
-            else $this->loadStudentInfo();
-        }
-        catch (ExpressionNotFound $e) {
-
-			try {
-				$already_login_msg = $this->parser->checkLoginInfo();
-				if($already_login_msg != "")
-					throw new AlreadyLogin($already_login_msg);
-			}
-            catch (ExpressionNotFound $e) {}
+			$already_login_msg = $this->parser->checkLoginInfo();
 		}
+		catch (ExpressionNotFound $e) {
+			Signal::log($e->getMessage());
+			$this->parser->savePage();
+		}
+
+		if(isset($already_login_msg))
+			throw new AlreadyLogin($this->parser, $already_login_msg);
+
 
 		return $this;
 	}
@@ -127,7 +150,7 @@ class Student
             $this->request_manager->setSessionKey($this->parser->getSessionKey());
         }
         catch (ExpressionNotFound $e) {
-            Signal::log($e);
+            Signal::log($e->getMessage());
             $this->parser->savePage();
         }
 
@@ -150,9 +173,7 @@ class Student
 	{
 		if(isset($this->course_list[$id]))
 		{
-			$parser = new CourseParser();
-
-			$parser->setParsePage($this->request()->course($id)->response());
+			$parser = new CourseParser($this->request()->course($id)->response());
 
 			$course = new Course(
 				$id,
@@ -167,9 +188,7 @@ class Student
 
 	public function openQuiz($id)
 	{
-		$parser = new QuizParser();
-
-		$parser->setParsePage($this->request()->quiz($id)->response());
+		$parser = new QuizParser($this->request()->quiz($id)->response());
 
 		$quiz = new Quiz(
 			$id,
@@ -182,51 +201,40 @@ class Student
 		return $quiz;
 	}
 
+	/**
+	 * @param $id
+	 * @return FinishedAttempt
+	 */
 	public function openAttempt($id)
 	{
-		$attempt_review_request = $this->request()->attemptReview($id)->response();
+		$attempt_review_document = $this->request()->attemptReview($id)->response();
 
-		$attempt_parser = new FinishedAttemptParser();
-		$questions_parser = new QuestionParser();
-
-		$attempt_parser->setParsePage($attempt_review_request);
-		$questions_parser->setParsePage($attempt_review_request);
-
-		$attempt = new FinishedAttempt(
-			$id,
-			$attempt_parser->getGrade(),
-			$attempt_parser->getName(),
-			$questions_parser->parseQuestions()
-		);
-
-		return $attempt;
+		return new FinishedAttempt($attempt_review_document);
 	}
 
+	/**
+	 * @param Quiz $quiz
+	 * @return ProcessingAttempt
+	 * @throws NewAttemptBan
+	 */
 	public function newAttempt(Quiz $quiz)
 	{
-		$attempt_parser = new ProcessingAttemptParser();
-
-		$attempt_parser->setParsePage($this->request()->startAttempt(
+		//TODO Remove code repeating
+		$new_attempt_document = $this->request()->startAttempt(
 			$quiz->getSessionKey(),
 			$quiz->getId(),
 			$quiz->getTimerExist()
-		)->response());
+		)->response();
 
 		if($quiz->getTimerExist() == true)
 		{
-			$attempt_parser->setParsePage($this->request()->startAttempt(
+			$new_attempt_document = $this->request()->startAttempt(
 				$quiz->getSessionKey(),
 				$quiz->getId(),
 				$quiz->getTimerExist()
-			)->response());
+			)->response();
 		}
 
-		$new_attempt = new ProcessingAttempt(
-			$attempt_parser->getAttemptId(),
-			$this,
-			$attempt_parser
-		);
-
-		return $new_attempt;
+		return new ProcessingAttempt($new_attempt_document);
 	}
 }

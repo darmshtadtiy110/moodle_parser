@@ -19,7 +19,7 @@ class QuizParser extends Parser
 		$session = "";
 
 		try{
-			$session = $this->parse_page->find("input[name=sesskey]")[0]->attr("value");
+			$session = $this->document->find("input[name=sesskey]")[0]->attr("value");
 		}
 		catch (Exception $e) {
 			echo "setSessionKey exception: ".$e->getMessage();
@@ -33,7 +33,7 @@ class QuizParser extends Parser
 		$quiz_id = "";
 
 		try{
-			$quiz_id = $this->parse_page->find("form>div>input[name=cmid]")[0]->attr("value");
+			$quiz_id = $this->document->find("form>div>input[name=cmid]")[0]->attr("value");
 		}
 		catch (Exception $e) {
 			echo "setQuizId exception: ".$e->getMessage();
@@ -47,7 +47,7 @@ class QuizParser extends Parser
 		$timer_exist = false;
 
 		try {
-			$quiz_info = $this->parse_page->find("div.box.py-3.quizinfo>p");
+			$quiz_info = $this->document->find("div.box.py-3.quizinfo>p");
 			if(count($quiz_info) > 1) return true;
 		}
 		catch (Exception $e) { echo "isTimer exception: ".$e->getMessage(); }
@@ -64,7 +64,7 @@ class QuizParser extends Parser
 
 	public function getAttemptList()
 	{
-		$attempt_list = [];
+		$finished_attempts = [];
 		$attempt_table = $this->find("table.generaltable.quizattemptsummary>tbody>tr");
 
 		foreach ($attempt_table as $attempt_tr)
@@ -84,7 +84,7 @@ class QuizParser extends Parser
 
 				if( empty($review) )
 				{
-					$attempt_list["processing"] = [
+					$finished_attempts["processing"] = [
 						"index" => $index,
 						"name" => $name,
 						"state" => "processing"
@@ -95,7 +95,7 @@ class QuizParser extends Parser
 					$id = Parser::parseExpressionFromLink("attempt", $attempt_review_link);
 					$grade = (int) $grade[0]->text();
 
-					$attempt_list[$id] = [
+					$finished_attempts[$id] = [
 						"index" => $index,
 						"name" => $name,
 						"state" => "finished",
@@ -105,6 +105,6 @@ class QuizParser extends Parser
 			}
 			catch (InvalidSelectorException $e) { echo "loadAttemptList exception ".$e->getMessage(); }
 		}
-		return $attempt_list;
+		return $finished_attempts;
 	}
 }

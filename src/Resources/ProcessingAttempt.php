@@ -4,54 +4,42 @@
 namespace MoodleParser\Resources;
 
 
-use MoodleParser\AttemptProcessor\Processor;
-use MoodleParser\General\Student;
-use MoodleParser\Parser\Resources\ProcessingAttemptParser;
-use MoodleParser\Parser\Resources\QuestionParser;
+use DiDom\Document;
+use MoodleParser\Parser\Exceptions\NewAttemptBan;
+use MoodleParser\Parser\Resources\AttemptParser;
 
 class ProcessingAttempt extends Attempt
 {
-	/** @var ProcessingAttemptParser */
+	/** @var AttemptParser */
 	protected $parser;
-
-	/** @var QuestionParser */
-	protected $question_parser;
-
-	/** @var Processor */
-	protected $processor;
-
-	private $student;
 
 	/** @var Question[] */
 	private $question_list = [];
 
-	private $form_inputs = [];
-
-	public function __construct(
-		$id,
-		Student $student,
-		ProcessingAttemptParser $parser
-	)
+	/**
+	 * ProcessingAttempt constructor.
+	 * @param Document $new_attempt_document
+	 * @throws NewAttemptBan
+	 */
+	public function __construct(Document $new_attempt_document)
 	{
-		$this->student = $student;
+		$this->parser($new_attempt_document);
 
-		$this->parser = $parser;
-
-		$this->question_parser = new QuestionParser();
-
-		parent::__construct($id);
+		parent::__construct($this->parser->getProcessingAttemptId());
 
 		$this->use_parser();
 	}
 
-	private function student()
+	/**
+	 * @param Document|null $new_attempt_document
+	 * @return AttemptParser
+	 */
+	public function parser(Document $new_attempt_document = null)
 	{
-		return $this->student;
-	}
+		if(!is_null($new_attempt_document))
+			$this->parser = new AttemptParser($new_attempt_document);
 
-	public function setProcessor(Processor $processor)
-	{
-		$this->processor = $processor;
+		return $this->parser;
 	}
 
 	/**
@@ -62,26 +50,15 @@ class ProcessingAttempt extends Attempt
 		return $this->question_list;
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getFormInputs()
+	public function use_parser()
 	{
-		return $this->form_inputs;
-	}
-
-	protected function use_parser()
-	{
-		$this->question_parser->setParsePage($this->parser->getParsePage());
-		$current_questions_array = $this->question_parser->parseQuestions();
+		$current_questions_array = $this->parser()->getQuestionsArray();
 
 		foreach ($current_questions_array as $question)
 		{
 			$question->setCurrent(true);
 			$this->setQuestion($question);
 		}
-
-		$this->form_inputs = $this->parser->parseForm();
 	}
 
 	/**
@@ -114,66 +91,5 @@ class ProcessingAttempt extends Attempt
 			if($question->isCurrent()) $current[] = $question;
 		}
 		return $current;
-	}
-
-	public function process()
-	{
-		$current = $this->getCurrentQuestions();
-
-		foreach ($current as $question)
-		{
-			$selected_variant = $this->processor->choiceVariant($question);
-
-			$question->selectVariant($selected_variant);
-			$question->setCurrent(false);
-
-			$this->setQuestion($question);
-			$this->form_inputs[$selected_variant->getInputName()] = $selected_variant->getInputValue();
-		}
-
-		$this->processPage();
-		$this->use_parser();
-
-	}
-
-	private function processPage()
-	{
-		$next_page_request =
-			$this->student()
-				 ->request()
-				 ->processAttempt($this->form_inputs);
-
-		$this->parser->setParsePage($next_page_request->response());
-	}
-
-	public function processAllQuestions()
-	{
-		do {
-			$status = $this->parser->getQuestionsStatus();
-
-			if($status["saved"] == $status["total"]) break;
-
-			var_dump($status);
-
-			$this->process();
-
-		}
-		while ($status["saved"] < $status["total"]-1);
-
-		$this->finish();
-	}
-
-	public function finish()
-	{
-		$summary_page_request =
-			$this->student()
-			->request()
-			->finishAttempt($this->getId());
-
-		$this->parser->setParsePage($summary_page_request->response());
-
-		$this->form_inputs = $this->parser->parseForm("finish_attempt");
-
-		$this->processPage();
 	}
 }

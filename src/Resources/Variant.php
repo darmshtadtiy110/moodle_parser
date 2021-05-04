@@ -17,7 +17,7 @@ abstract class Variant
 	/** @var bool */
 	protected $checked;
 
-	protected $is_correct;
+	protected $correct = false;
 
 	protected $input_name;
 
@@ -86,12 +86,12 @@ abstract class Variant
 	 */
 	public function isCorrect()
 	{
-		return $this->is_correct;
+		return $this->correct;
 	}
 
 	public function setIsCorrect($correct)
 	{
 		if(is_bool($correct))
-			$this->is_correct = $correct;
+			$this->correct = $correct;
 	}
 }

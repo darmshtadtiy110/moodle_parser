@@ -4,7 +4,8 @@
 namespace MoodleParser\Resources;
 
 
-use Exception;
+use DiDom\Element;
+use MoodleParser\Parser\Resources\QuestionParser;
 
 class Question extends Resource
 {
@@ -22,27 +23,39 @@ class Question extends Resource
 
 	protected $saved = false;
 
+	protected $answered = false;
+
 	/**
 	 * Question constructor.
-	 * @param $id
-	 * @param $text
-	 * @param $variants
-	 * @param $correct
-	 * @throws Exception
+	 * @param Element $question_block
 	 */
-	public function __construct($id, $text, $variants, $correct)
+	public function __construct(Element $question_block)
 	{
-		if(!is_bool($correct)) throw new Exception("Correct arg isn't bool");
+		$question_parser = new QuestionParser($question_block);
 
-		$this->variants = $variants;
-		$this->correct = $correct;
+		if(!$question_block->classes()->contains("notyetanswered"))
+		{
+			$this->isAnswered();
+			$variants = $question_parser->getVariants();
+			foreach ($variants as $key => $variant)
+			{
+				if($variant->getValue() == $question_parser->findCorrectAnswerText())
+				{
+					$variant->setIsCorrect(true);
+					$variants[$key] = $variant;
+				}
+			}
+			$this->variants = $variants;
+		}
+		else {
+			$this->variants = $question_parser->getVariants();
+		}
 
 		foreach($this->variants as $variant)
 		{
 			if($variant->isChecked()) $this->selected_variant = $variant->getId();
 		}
-
-		parent::__construct($id, $text);
+		parent::__construct($question_parser->getNumber(), $question_parser->getText());
 	}
 
 	/**
@@ -67,6 +80,11 @@ class Question extends Resource
 	public function isCorrect()
 	{
 		return $this->correct;
+	}
+
+	public function setIsCorrect()
+	{
+		$this->correct = true;
 	}
 
 	/**
@@ -115,6 +133,16 @@ class Question extends Resource
 	public function setCurrent($current)
 	{
 		$this->current = $current;
+	}
+
+	public function getAnswered()
+	{
+		return $this->answered;
+	}
+
+	public function isAnswered()
+	{
+		$this->answered = true;
 	}
 
 	/**

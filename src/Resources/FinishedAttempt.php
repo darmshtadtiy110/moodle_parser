@@ -4,6 +4,9 @@
 namespace MoodleParser\Resources;
 
 
+use DiDom\Document;
+use MoodleParser\Parser\Resources\AttemptParser;
+
 class FinishedAttempt extends Attempt
 {
 	/** @var int */
@@ -12,19 +15,15 @@ class FinishedAttempt extends Attempt
 	/** @var Question[] */
 	private $questions = [];
 
-	/**
-	 * FinishedAttempt constructor.
-	 * @param $id
-	 * @param $grade
-	 * @param $name
-	 * @param array $questions
-	 */
-	public function __construct($id, $grade, $name, array $questions)
-	{
-		$this->grade = $grade;
-		$this->questions = $questions;
 
-		parent::__construct($id, $name);
+	public function __construct(Document $attempt_review_document)
+	{
+		$attempt_parser = new AttemptParser($attempt_review_document);
+
+		$this->grade = $attempt_parser->getGrade();
+		$this->questions = $attempt_parser->getQuestionsArray();
+
+		parent::__construct($attempt_parser->getFinishedAttemptId(), $attempt_parser->getName());
 	}
 
 	/**
