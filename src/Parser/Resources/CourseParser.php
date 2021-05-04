@@ -47,4 +47,10 @@ class CourseParser extends Parser
 	{
 		return $this->find("div.page-header-headings>h1")[0]->text();
 	}
+
+	public function getID()
+	{
+		$dropdown_lang_link = $this->find("a.dropdown-item")[0]->attr("href");
+		return parent::parseExpressionFromLink("id", $dropdown_lang_link);
+	}
 }

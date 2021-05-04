@@ -10,10 +10,10 @@ use MoodleParser\Parser\Exceptions\ExpressionNotFound;
 use MoodleParser\Parser\Exceptions\LoginError;
 use MoodleParser\Parser\Exceptions\NewAttemptBan;
 use MoodleParser\Parser\Exceptions\TokenDoesNotExist;
-use MoodleParser\Parser\Resources\CourseParser;
 use MoodleParser\Parser\Resources\QuizParser;
 use MoodleParser\Parser\Resources\StudentParser;
 use MoodleParser\Resources\Course;
+use MoodleParser\Resources\Exceptions\WrongResourceID;
 use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\ProcessingAttempt;
 use MoodleParser\Resources\Quiz;
@@ -62,7 +62,10 @@ class Student
 			$this->auth();
 			$this->loadStudentInfo();
 		}
-		catch (LoginError $e) { echo $e->getMessage(); }
+		catch (TokenDoesNotExist $e)
+			{ echo $e->getMessage()."\n"; }
+		catch (LoginError $e)
+			{ echo $e->getMessage()."\n"; }
 		catch (AlreadyLogin $e)
 		{
 			echo $e->getMessage()."\n";
@@ -168,22 +171,15 @@ class Student
 	/**
 	 * @param $id
 	 * @return Course|bool
+	 * @throws WrongResourceID
 	 */
 	public function openCourse($id)
 	{
 		if(isset($this->course_list[$id]))
 		{
-			$parser = new CourseParser($this->request()->course($id)->response());
-
-			$course = new Course(
-				$id,
-				$parser->getCourseName(),
-				$parser->getQuizList()
-			);
-			return $course;
+			return new Course($this->request()->course($id)->response());
 		}
-
-		else return false;
+		else throw new WrongResourceID("Course ".$id." does not exist in your course list");
 	}
 
 	public function openQuiz($id)

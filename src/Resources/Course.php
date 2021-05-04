@@ -3,7 +3,7 @@
 
 namespace MoodleParser\Resources;
 
-use MoodleParser\Parser\Resources\CourseParser;
+use DiDom\Document;
 
 class Course extends Resource
 {
@@ -11,16 +11,12 @@ class Course extends Resource
 
 	private $document_list = [];
 
-	/** @var CourseParser */
-	private $parser;
-
-	public function __construct($id, $name, $quiz_list)
+	public function __construct(Document $course)
 	{
-		$this->quiz_list = $quiz_list;
+		$this->parser($course);
+		$this->quiz_list = $this->parser()->getQuizList();
 
-		$this->parser = new CourseParser();
-
-		parent::__construct($id, $name);
+		parent::__construct($this->parser()->getID(), $this->parser()->getCourseName());
 	}
 
 	/**
@@ -59,15 +55,10 @@ class Course extends Resource
 	{
 		$this->quiz_list[$quiz->getId()] = $quiz;
 	}
-
+/*
 	public function setDocument(Document $doc)
 	{
 		$this->document_list[$doc->getId()] = $doc;
 	}
-
-	protected function use_parser()
-	{
-		$this->quiz_list = $this->parser->getQuizList();
-	}
-
+	*/
 }

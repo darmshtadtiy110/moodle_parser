@@ -33,14 +33,14 @@ class ProcessingAttempt extends Attempt
 	/**
 	 * @param Document|null $new_attempt_document
 	 * @return AttemptParser
-	 */
+	 *
 	public function parser(Document $new_attempt_document = null)
 	{
 		if(!is_null($new_attempt_document))
 			$this->parser = new AttemptParser($new_attempt_document);
 
 		return $this->parser;
-	}
+	}*/
 
 	/**
 	 * @return array

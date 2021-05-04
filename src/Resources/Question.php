@@ -5,7 +5,6 @@ namespace MoodleParser\Resources;
 
 
 use DiDom\Element;
-use MoodleParser\Parser\Resources\QuestionParser;
 
 class Question extends Resource
 {
@@ -31,15 +30,15 @@ class Question extends Resource
 	 */
 	public function __construct(Element $question_block)
 	{
-		$question_parser = new QuestionParser($question_block);
+		$this->parser($question_block);
 
 		if(!$question_block->classes()->contains("notyetanswered"))
 		{
 			$this->isAnswered();
-			$variants = $question_parser->getVariants();
+			$variants = $this->parser()->getVariants();
 			foreach ($variants as $key => $variant)
 			{
-				if($variant->getValue() == $question_parser->findCorrectAnswerText())
+				if($variant->getValue() == $this->parser()->findCorrectAnswerText())
 				{
 					$variant->setIsCorrect(true);
 					$variants[$key] = $variant;
@@ -48,14 +47,14 @@ class Question extends Resource
 			$this->variants = $variants;
 		}
 		else {
-			$this->variants = $question_parser->getVariants();
+			$this->variants = $this->parser()->getVariants();
 		}
 
 		foreach($this->variants as $variant)
 		{
 			if($variant->isChecked()) $this->selected_variant = $variant->getId();
 		}
-		parent::__construct($question_parser->getNumber(), $question_parser->getText());
+		parent::__construct($this->parser()->getNumber(), $this->parser()->getText());
 	}
 
 	/**

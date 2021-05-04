@@ -132,11 +132,11 @@ class AttemptParser extends Parser
 	public function getGrade()
 	{
 		$general_table = $this->findGeneralTable();
-
 		try {
 			$rows = $general_table->find("tbody>tr");
-			$grade = (int) $rows[5]->find("td>b")[0]->text();
-			return $grade;
+			if(isset($rows[5]))
+				return (int) $rows[5]->find("td>b")[0]->text();
+			else return (int) $rows[4]->find("td>b")[0]->text();
 		}
 		catch (InvalidSelectorException $e) {}
 		return false;
