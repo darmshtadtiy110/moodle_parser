@@ -134,15 +134,23 @@ class AttemptParser extends Parser
 		$general_table = $this->findGeneralTable();
 		try {
 			$rows = $general_table->find("tbody>tr");
-			if(isset($rows[5]))
-				return (int) $rows[5]->find("td>b")[0]->text();
-			else return (int) $rows[4]->find("td>b")[0]->text();
+			$grade_row_offset = 0;
+
+			foreach ($rows as $key => $row)
+			{
+				if($row->find("th")[0]->text() == "Оцінка")
+				{
+					$grade_row_offset = $key;
+					break;
+				}
+			}
+			return (int) $rows[$grade_row_offset]->find("td>b")[0]->text();
 		}
 		catch (InvalidSelectorException $e) {}
 		return false;
 	}
 
-	public function getName()
+	public function name()
 	{
 		$general_table = $this->findGeneralTable();
 

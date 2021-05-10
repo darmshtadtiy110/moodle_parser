@@ -22,7 +22,7 @@ class FinishedAttempt extends Attempt
 		$this->grade = $this->parser()->getGrade();
 		$this->questions = $this->parser()->getQuestionsArray();
 
-		parent::__construct($this->parser()->getFinishedAttemptId(), $this->parser()->getName());
+		parent::__construct($this->parser()->getFinishedAttemptId(), $this->parser()->name());
 	}
 
 	/**

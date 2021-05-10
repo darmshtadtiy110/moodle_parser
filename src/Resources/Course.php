@@ -14,9 +14,10 @@ class Course extends Resource
 	public function __construct(Document $course)
 	{
 		$this->parser($course);
+
 		$this->quiz_list = $this->parser()->getQuizList();
 
-		parent::__construct($this->parser()->getID(), $this->parser()->getCourseName());
+		parent::__construct($this->parser()->courseId(), $this->parser()->getCourseName());
 	}
 
 	/**
@@ -53,12 +54,12 @@ class Course extends Resource
 
 	public function setQuiz(Quiz $quiz)
 	{
-		$this->quiz_list[$quiz->getId()] = $quiz;
+		$this->quiz_list[$quiz->id()] = $quiz;
 	}
 /*
 	public function setDocument(Document $doc)
 	{
-		$this->document_list[$doc->getId()] = $doc;
+		$this->document_list[$doc->id()] = $doc;
 	}
 	*/
 }

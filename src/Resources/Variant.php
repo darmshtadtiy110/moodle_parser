@@ -44,7 +44,7 @@ abstract class Variant
 	/**
 	 * @return int
 	 */
-	public function getId()
+	public function id()
 	{
 		return $this->id;
 	}

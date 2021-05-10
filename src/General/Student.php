@@ -8,15 +8,9 @@ use MoodleParser\FileSystem\Cookies;
 use MoodleParser\Parser\Exceptions\AlreadyLogin;
 use MoodleParser\Parser\Exceptions\ExpressionNotFound;
 use MoodleParser\Parser\Exceptions\LoginError;
-use MoodleParser\Parser\Exceptions\NewAttemptBan;
 use MoodleParser\Parser\Exceptions\TokenDoesNotExist;
-use MoodleParser\Parser\Resources\QuizParser;
 use MoodleParser\Parser\Resources\StudentParser;
 use MoodleParser\Resources\Course;
-use MoodleParser\Resources\Exceptions\WrongResourceID;
-use MoodleParser\Resources\FinishedAttempt;
-use MoodleParser\Resources\ProcessingAttempt;
-use MoodleParser\Resources\Quiz;
 
 class Student
 {
@@ -44,11 +38,12 @@ class Student
 	/** @var RequestManager */
 	private $request_manager;
 
+	private $is_auth = false;
+
 	/**
 	 * Student constructor.
 	 * @param $login
 	 * @param $password
-	 * @throws TokenDoesNotExist
 	 */
 	public function __construct(
 		$login,
@@ -62,8 +57,6 @@ class Student
 			$this->auth();
 			$this->loadStudentInfo();
 		}
-		catch (TokenDoesNotExist $e)
-			{ echo $e->getMessage()."\n"; }
 		catch (LoginError $e)
 			{ echo $e->getMessage()."\n"; }
 		catch (AlreadyLogin $e)
@@ -102,21 +95,33 @@ class Student
 		return $this->cookies;
 	}
 
+	public function isAuth()
+	{
+		return $this->is_auth;
+	}
+
 	/**
-	 * @return $this
 	 * @throws AlreadyLogin
 	 * @throws LoginError
-	 * @throws TokenDoesNotExist
 	 */
 	public function auth()
 	{
+		echo "Auth as: ".$this->login."\n";
+
 		$this->createCookies();
 
 		$this->request_manager = new RequestManager($this->cookies());
 
 		$this->parser = new StudentParser($this->request()->login()->response());
 
-		$token = $this->parser->getToken();
+		try{
+			$token = $this->parser->getToken();
+		}
+		catch (TokenDoesNotExist $e)
+		{
+			echo "Token does not exists. ".$e->getMessage()."\n";
+			//$e->parser()->savePage();
+		}
 
 		$this->parser = new StudentParser($this->request()->login(
 			$this->login,
@@ -124,10 +129,13 @@ class Student
 			$token
 		)->response());
 
+		$this->parser->savePage();
+
+
 		if($this->parser->getLoginResults() == "Ви не пройшли ідентифікацію")
 			throw new LoginError($this->parser, $this->parser->getLoginError());
 
-		else $this->loadStudentInfo();
+		$this->loadStudentInfo();
 
 		try {
 			$already_login_msg = $this->parser->checkLoginInfo();
@@ -140,8 +148,7 @@ class Student
 		if(isset($already_login_msg))
 			throw new AlreadyLogin($this->parser, $already_login_msg);
 
-
-		return $this;
+		$this->is_auth = true;
 	}
 
 	public function loadStudentInfo()
@@ -163,74 +170,10 @@ class Student
 	/**
 	 * @return array
 	 */
-	public function getCourseList()
+	public function courseList()
 	{
 		return $this->course_list;
 	}
 
-	/**
-	 * @param $id
-	 * @return Course|bool
-	 * @throws WrongResourceID
-	 */
-	public function openCourse($id)
-	{
-		if(isset($this->course_list[$id]))
-		{
-			return new Course($this->request()->course($id)->response());
-		}
-		else throw new WrongResourceID("Course ".$id." does not exist in your course list");
-	}
 
-	public function openQuiz($id)
-	{
-		$parser = new QuizParser($this->request()->quiz($id)->response());
-
-		$quiz = new Quiz(
-			$id,
-			$parser->getQuizName(),
-			$parser->getAttemptList(),
-			$parser->getSessionKey(),
-			$parser->getTimer()
-		);
-
-		return $quiz;
-	}
-
-	/**
-	 * @param $id
-	 * @return FinishedAttempt
-	 */
-	public function openAttempt($id)
-	{
-		$attempt_review_document = $this->request()->attemptReview($id)->response();
-
-		return new FinishedAttempt($attempt_review_document);
-	}
-
-	/**
-	 * @param Quiz $quiz
-	 * @return ProcessingAttempt
-	 * @throws NewAttemptBan
-	 */
-	public function newAttempt(Quiz $quiz)
-	{
-		//TODO Remove code repeating
-		$new_attempt_document = $this->request()->startAttempt(
-			$quiz->getSessionKey(),
-			$quiz->getId(),
-			$quiz->getTimerExist()
-		)->response();
-
-		if($quiz->getTimerExist() == true)
-		{
-			$new_attempt_document = $this->request()->startAttempt(
-				$quiz->getSessionKey(),
-				$quiz->getId(),
-				$quiz->getTimerExist()
-			)->response();
-		}
-
-		return new ProcessingAttempt($new_attempt_document);
-	}
 }

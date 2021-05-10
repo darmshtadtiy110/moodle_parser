@@ -5,7 +5,13 @@ namespace MoodleParser\Processors;
 
 
 use MoodleParser\General\Student;
+use MoodleParser\Parser\Exceptions\NewAttemptBan;
+use MoodleParser\Resources\Attempt;
+use MoodleParser\Resources\Course;
+use MoodleParser\Resources\Exceptions\WrongResourceID;
+use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\ProcessingAttempt;
+use MoodleParser\Resources\Quiz;
 
 class AttemptProcessor
 {
@@ -21,16 +27,83 @@ class AttemptProcessor
 	/** @var array  */
 	private $form_inputs = [];
 
-	public function __construct(Student $student, ProcessingAttempt $attempt, QuestionProcessor $question_processor)
+	public function __construct(Student $student)
 	{
 		$this->student = $student;
-		$this->attempt = $attempt;
-		$this->question_processor = $question_processor;
 	}
 
-	private function questionProcessor()
+	private function attempt(Attempt $attempt = null)
 	{
+		if(!is_null($attempt))
+			$this->attempt = $attempt;
+	}
+
+	public function questionProcessor(QuestionProcessor $proc = null)
+	{
+		if(!is_null($proc))
+			$this->question_processor = $proc;
+
 		return $this->question_processor;
+	}
+
+	public function request()
+	{
+		return $this->student->request();
+	}
+
+	/**
+	 * @param $id
+	 * @return Course|bool
+	 * @throws WrongResourceID
+	 */
+	public function openCourse($id)
+	{
+		if(isset($this->student()->courseList()[$id]))
+		{
+			return new Course($this->request()->course($id)->response());
+		}
+		else throw new WrongResourceID("Course ".$id." does not exist in student's course list");
+	}
+
+	public function openQuiz($id)
+	{
+		return new Quiz($this->request()->quiz($id)->response());
+	}
+
+	/**
+	 * @param $id
+	 * @return FinishedAttempt
+	 */
+	public function openAttempt($id)
+	{
+		$attempt_review_document = $this->request()->attemptReview($id)->response();
+
+		return new FinishedAttempt($attempt_review_document);
+	}
+
+	/**
+	 * @param Quiz $quiz
+	 * @throws NewAttemptBan
+	 */
+	public function newAttempt(Quiz $quiz)
+	{
+		//TODO Remove code repeating
+		$new_attempt_document = $this->request()->startAttempt(
+			$quiz->getSessionKey(),
+			$quiz->id(),
+			$quiz->getTimerExist()
+		)->response();
+
+		if($quiz->getTimerExist() == true)
+		{
+			$new_attempt_document = $this->request()->startAttempt(
+				$quiz->getSessionKey(),
+				$quiz->id(),
+				$quiz->getTimerExist()
+			)->response();
+		}
+
+		$this->attempt(new ProcessingAttempt($new_attempt_document));
 	}
 
 	private function process()
@@ -57,7 +130,7 @@ class AttemptProcessor
 	private function goToNextPage()
 	{
 		$next_page_request =
-			$this->getStudent()
+			$this->student()
 				->request()
 				->processAttempt($this->form_inputs);
 
@@ -81,9 +154,9 @@ class AttemptProcessor
 	private function finish()
 	{
 		$summary_page_request =
-			$this->getStudent()
+			$this->student()
 				->request()
-				->finishAttempt($this->attempt->getId());
+				->finishAttempt($this->attempt->id());
 
 		$this->attempt->parser($summary_page_request->response());
 
@@ -92,7 +165,7 @@ class AttemptProcessor
 		$this->goToNextPage();
 	}
 
-	private function getStudent()
+	private function student()
 	{
 		return $this->student;
 	}

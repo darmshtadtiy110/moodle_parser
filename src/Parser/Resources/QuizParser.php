@@ -3,6 +3,7 @@
 
 namespace MoodleParser\Parser\Resources;
 
+use DiDom\Element;
 use DiDom\Exceptions\InvalidSelectorException;
 use Exception;
 use MoodleParser\Parser\Parser;
@@ -14,7 +15,7 @@ class QuizParser extends Parser
 		return $this->find("h2")[0]->text();
 	}
 
-	public function getSessionKey()
+	public function sessionKey()
 	{
 		$session = "";
 
@@ -28,6 +29,10 @@ class QuizParser extends Parser
 		return ($session === "") ? false : $session;
 	}
 
+	/**
+	 * @return bool|Element|string|null
+	 * @deprecated
+	 */
 	public function getQuizId()
 	{
 		$quiz_id = "";
@@ -40,6 +45,12 @@ class QuizParser extends Parser
 		}
 
 		return ($quiz_id === "") ? false : $quiz_id;
+	}
+
+	public function quizId()
+	{
+		$dropdown_lang_link = $this->find("a.dropdown-item")[0]->attr("href");
+		return parent::parseExpressionFromLink("id", $dropdown_lang_link);
 	}
 
 	public function getTimer()

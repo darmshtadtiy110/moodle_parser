@@ -4,28 +4,31 @@
 namespace MoodleParser\Resources;
 
 
+use DiDom\Document;
+
 class Quiz extends Resource
 {
+	private $available = false;
+
 	private $finished_attempts = [];
+
+	private $has_processing_attempt = true;
 
 	private $session_key;
 
 	/** @var bool */
 	private $timer_exist;
 
-	public function __construct(
-		$id,
-		$name,
-		$all_attempts,
-		$session_key,
-		$timer_exist
-	) {
+	public function __construct(Document $quiz)
+	{
+		$this->parser($quiz);
 
-		$this->finished_attempts = $this->getFinishedAttemptList($all_attempts);
-		$this->session_key = $session_key;
-		$this->timer_exist = $timer_exist;
+		$this->finished_attempts = $this->getFinishedAttemptList($this->parser()->getAttemptList());
 
-		parent::__construct($id, $name);
+		$this->session_key = $this->parser()->sessionKey();
+		$this->timer_exist = $this->parser()->getTimer();
+
+		parent::__construct($this->parser()->quizId(), $this->parser()->getQuizName());
 	}
 
 	public function getAttempt($id)
@@ -48,6 +51,9 @@ class Quiz extends Resource
 			if($attempt["state"] == "finished")
 			{
 				$finished_attempt[$key] = $attempt;
+			}
+			else {
+				$this->has_processing_attempt = true;
 			}
 		}
 		return $finished_attempt;
@@ -74,5 +80,18 @@ class Quiz extends Resource
 		}
 
 		return array_pop($index);
+	}
+
+	public function getBestGrade()
+	{
+		return $this->finished_attempts[$this->getBestAttemptID()]["grade"];
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAvailable()
+	{
+		return $this->available;
 	}
 }

@@ -52,7 +52,7 @@ class Question extends Resource
 
 		foreach($this->variants as $variant)
 		{
-			if($variant->isChecked()) $this->selected_variant = $variant->getId();
+			if($variant->isChecked()) $this->selected_variant = $variant->id();
 		}
 		parent::__construct($this->parser()->getNumber(), $this->parser()->getText());
 	}
@@ -60,7 +60,7 @@ class Question extends Resource
 	/**
 	 * @return int
 	 */
-	public function getId()
+	public function id()
 	{
 		return $this->id;
 	}
@@ -162,7 +162,7 @@ class Question extends Resource
 
 	public function selectVariant(Variant $variant)
 	{
-		$this->selected_variant = $variant->getId();
+		$this->selected_variant = $variant->id();
 		$this->setSaved(true);
 	}
 }
