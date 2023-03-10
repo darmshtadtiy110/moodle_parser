@@ -8,7 +8,7 @@ use MoodleParser\General\Student;
 use MoodleParser\Parser\Exceptions\NewAttemptBan;
 use MoodleParser\Resources\Attempt;
 use MoodleParser\Resources\Course;
-use MoodleParser\Resources\Exceptions\WrongResourceID;
+//use MoodleParser\Resources\Exceptions\WrongResourceID;
 use MoodleParser\Resources\FinishedAttempt;
 use MoodleParser\Resources\ProcessingAttempt;
 use MoodleParser\Resources\Quiz;
@@ -54,13 +54,20 @@ class AttemptProcessor
 	/**
 	 * @param $id
 	 * @return Course|bool
-	 * @throws WrongResourceID
 	 */
 	public function openCourse($id)
 	{
+
 		return new Course($this->request()->course($id)->response());
 
-		//else throw new WrongResourceID("Course ".$id." does not exist in student's course list");
+		/*
+		else throw new WrongResourceID("Course ".$id." does not exist in student's course list");
+	    
+		if(isset($this->student()->courseList()[$id]))
+		{
+			return new Course($this->request()->course($id)->response());
+		}
+		else throw new WrongResourceID("Course ".$id." does not exist in student's course list");*/
 	}
 
 	public function openQuiz($id)
