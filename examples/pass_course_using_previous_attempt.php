@@ -9,8 +9,10 @@ use MoodleParser\Processors\RandomQuestionProcessor;
 use MoodleParser\Processors\TipsQuestionProcessor;
 use MoodleParser\Resources\Exceptions\WrongResourceID;
 
-$bogdan = new Student("vdovinbogdan0@gmail.com", "Darmshtadtiy110");
-//$kolya_bliznec = new Student("kol9blizne4@gmail.com", "24seeqeeN");
+$email = "example@mail.com";
+$pass = "passwd";
+
+$user = new Student($email, $passwd);
 
 function pass_test(AttemptProcessor $processor, $quiz_id )
 {
@@ -97,5 +99,6 @@ function pass_course(Student $student, $course_id)
 
 	}
 }
+$coursenum = 0000;
 
-pass_course($bogdan, 1350);
+pass_course($user, $coursenum);

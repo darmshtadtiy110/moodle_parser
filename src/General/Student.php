@@ -155,7 +155,7 @@ class Student
     {
         try {
             $this->name = $this->parser->getUserText();
-            $this->course_list = $this->parser->getCoursesArray();
+            //$this->course_list = $this->parser->getCoursesArray();
             $this->id = $this->parser->getUserId();
             $this->request_manager->setSessionKey($this->parser->getSessionKey());
         }

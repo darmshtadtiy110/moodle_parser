@@ -22,6 +22,7 @@ class Quiz extends Resource
 	public function __construct(Document $quiz)
 	{
 		$this->parser($quiz);
+		//$this->parser()->savePage();
 
 		$this->finished_attempts = $this->getFinishedAttemptList($this->parser()->getAttemptList());
 

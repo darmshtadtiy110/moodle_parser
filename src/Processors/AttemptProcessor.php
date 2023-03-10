@@ -58,11 +58,9 @@ class AttemptProcessor
 	 */
 	public function openCourse($id)
 	{
-		if(isset($this->student()->courseList()[$id]))
-		{
-			return new Course($this->request()->course($id)->response());
-		}
-		else throw new WrongResourceID("Course ".$id." does not exist in student's course list");
+		return new Course($this->request()->course($id)->response());
+
+		//else throw new WrongResourceID("Course ".$id." does not exist in student's course list");
 	}
 
 	public function openQuiz($id)
